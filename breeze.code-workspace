@@ -21,6 +21,31 @@
 		"version": "2.0.0",
 		"tasks": [
 			{
+				"label": "STM32 Programmer: Flash",
+				"type": "shell",
+				"command": "STM32_Programmer_CLI",
+				"args": [
+					"-c",
+					"port=SWD",
+					"freq=4000",
+					" -hardRst",
+					"",
+					"-e",
+					"all",
+					"-d",
+					"${workspaceFolder}/build/zephyr/zephyr.bin",
+					"0x08000000",
+					" -rst",
+					""
+				],
+				"problemMatcher": [],
+				"presentation": {
+					"reveal": "always"
+				},
+				"dependsOn": "West: Build"
+			},
+			{
+				
 				"label": "West: Build",
 				"type": "shell",
 				"command": "west build",

@@ -1,1 +1,11 @@
 /* This file will automatic applyed when using damiao_mc02 board */
+/ {
+    chosen {
+        zephyr,console = &usart10; // 指定UART10为控制台
+    };
+};
+
+&usart10 {
+    status = "okay";
+    current-speed = <115200>; // 设置波特率
+};
