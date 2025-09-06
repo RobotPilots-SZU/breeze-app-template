@@ -30,22 +30,41 @@
 				}
 			},
 			{
+				"label": "West: Menu Config",
+				"type": "shell",
+				"command": "west",
+				"args": [
+					"build",
+					"-t",
+					"menuconfig"
+				],
+				"problemMatcher": []
+			},
+			{
 				"label": "West: Debugserver (OpenOCD)",
 				"type": "shell",
-				"command": "west debugserver",
+				"command": "west",
 				"args": [
-					"-d ${workspaceFolder}",
-					"-r openocd"
-				]
+					"debugserver",
+					"-d",
+					"${workspaceFolder}",
+					"-r",
+					"openocd"
+				],
+				"problemMatcher": []
 			},
 			{
 				"label": "West: Debugserver (JLink)",
 				"type": "shell",
-				"command": "west debugserver",
+				"command": "west",
 				"args": [
-					"-d ${workspaceFolder}",
-					"-r jlink"
-				]
+					"debugserver",
+					"-d",
+					"${workspaceFolder}",
+					"-r",
+					"jlink"
+				],
+				"problemMatcher": []
 			}
 		]
 	}
