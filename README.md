@@ -8,12 +8,12 @@ Infantry_dog/
 ├── prj.conf
 ├── README.md
 ├── include/
-│   └── config
+│   └── Config
 └──src/
-    ├── algorithm
-    ├── hardware
-    ├── module
-    ├── application
-    ├── task
+    ├── Algorithm
+    ├── Hardware
+    ├── Module
+    ├── Application
+    ├── Task
     └── main.c
 ```
