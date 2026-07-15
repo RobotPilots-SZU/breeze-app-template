@@ -1,0 +1,29 @@
+cmake_minimum_required(VERSION 3.20)
+
+if(NOT BOARD)
+    set(BOARD damiao_mc02)
+    message("BOARD not defined, use default value: ${BOARD}")
+else()
+    message("Use BOARD: ${BOARD}")
+endif()
+
+find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
+
+project(infantry_dog_down)
+
+
+zephyr_library_sources(
+    src/main.cpp
+    src/DeviceLayer/bmi_stream.cpp
+    src/AlgorithmLayer/Algorithm.cpp
+    src/AlgorithmLayer/algo_ekf_filter.cpp
+    src/AlgorithmLayer/algo_kf_filter.cpp
+    src/TaskLayer/all_task.cpp
+    src/TaskLayer/conf_task.cpp
+)
+
+zephyr_library_include_directories(
+    src/AlgorithmLayer/include      # 算法层头文件
+    src/DeviceLayer                 # 设�?�层头文件（�? imu_ekf.hpp�?
+    src/TaskLayer                   # 任务层头文件（�?? conf_task.hpp�?
+)
