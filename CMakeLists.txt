@@ -9,21 +9,26 @@ endif()
 
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 
-project(infantry_dog_down)
+project(infantry_down_test)
 
-target_include_directories(app PRIVATE
-    ./include
-    ./src/Algorithm
-    ./src/Hardware
-    ./src/Module
-    ./src/Application
-    ./src/Task
-)
+# 直接添加所有源文件到 app
 target_sources(app PRIVATE
-    ./src/main.c
-    ./src/Algorithm/test.c
-    ./src/Hardware/test.c
-    ./src/Module/test.c
-    ./src/Application/test.c
-    ./src/Task/test.c
+    src/main.cpp
+    src/DeviceLayer/bmi_stream.cpp
+    src/AlgorithmLayer/Algorithm.cpp
+    src/AlgorithmLayer/algo_ekf_filter.cpp
+    src/AlgorithmLayer/algo_kf_filter.cpp
+    src/TaskLayer/all_task.cpp
+    src/TaskLayer/conf_task.cpp
+    src/DeviceLayer/device.cpp
+    src/DeviceLayer/device_remote.c
+    src/DeviceLayer/rtt.c
+    src/DeviceLayer/motor.cpp
+)
+
+# 添加头文件路径
+target_include_directories(app PRIVATE
+    src/AlgorithmLayer/include      # 算法层头文件
+    src/DeviceLayer                 # 设备层头文件（如 imu_ekf.hpp）
+    src/TaskLayer                   # 任务层头文件（如 conf_task.hpp）
 )
