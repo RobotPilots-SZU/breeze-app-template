@@ -1,4 +1,4 @@
-#include "motor.hpp"
+#include "device_motor.h"
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(motor, LOG_LEVEL_INF);
 

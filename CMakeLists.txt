@@ -23,7 +23,7 @@ target_sources(app PRIVATE
     src/DeviceLayer/device.cpp
     src/DeviceLayer/device_remote.c
     src/DeviceLayer/rtt.c
-    src/DeviceLayer/motor.cpp
+    src/DeviceLayer/device_motor.c
 )
 
 # 添加头文件路径
