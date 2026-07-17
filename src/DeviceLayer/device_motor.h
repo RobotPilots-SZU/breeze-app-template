@@ -1,6 +1,7 @@
 #pragma once
 
 #include <drivers/motor.h>
+#include "RM_motor.h"
 
 #ifdef CONFIG_CAN_TX_MANAGER
 #include <drivers/can_tx_manager.h>
@@ -21,11 +22,17 @@
 #define RX_MANAGER_NODE DT_NODELABEL(can_rx_mgr1)
 #endif
 
-#ifdef __cplusplus
-extern "C"
+typedef enum
 {
-#endif
+    WHEEL_LF = 0,
+    WHEEL_LB,
+    WHEEL_RF,
+    WHEEL_RB,
+    WHEEL_CNT,
+} Wheel_List_e;
+
+
+extern Motor_RM_t wheel_motor[WHEEL_CNT];
+
 int Motor_Init(void);
-#ifdef __cplusplus
-}
-#endif  
+

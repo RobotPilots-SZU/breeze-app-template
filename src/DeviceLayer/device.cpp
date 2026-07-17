@@ -35,6 +35,13 @@ int Device_Init(void)
         return ret;
     }
 
+    ret = Motor_Init();
+    if (ret != 0)
+    {
+        LOG_ERR("Motor_Init failed with error code: %d", ret);
+        return ret;
+    }
+
     vofa_rtt_init();
     return 0;
 }

@@ -24,6 +24,7 @@ target_sources(app PRIVATE
     src/DeviceLayer/device_remote.c
     src/DeviceLayer/rtt.c
     src/DeviceLayer/device_motor.c
+    src/DeviceLayer/RM_motor.c
 )
 
 # 添加头文件路径
