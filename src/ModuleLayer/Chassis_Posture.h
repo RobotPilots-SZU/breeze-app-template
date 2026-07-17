@@ -4,10 +4,6 @@
 /* Includes ------------------------------------------------------------------*/
 #include "arm_math.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /* Exported macro ------------------------------------------------------------*/
 #define Degree_to_rad 0.017453f
 
@@ -51,9 +47,5 @@ typedef struct Chassis_Posture_struct_t
 /* Exported functions --------------------------------------------------------*/
 /* Servo functions */
 extern Chassis_Posture_t Chassis_Posture;
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif

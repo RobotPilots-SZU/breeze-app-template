@@ -5,3 +5,7 @@ build/
 *.vscode/
 *.code-workspace
 *.cfg
+
+infantry_down_d/
+breeze.code-workspace
+openocd.cfg

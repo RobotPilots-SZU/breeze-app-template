@@ -25,6 +25,10 @@ target_sources(app PRIVATE
     src/AlgorithmLayer/Algorithm.cpp
     src/AlgorithmLayer/algo_ekf_filter.cpp
     src/AlgorithmLayer/algo_kf_filter.cpp
+    src/AlgorithmLayer/ave_filter.c
+    src/AlgorithmLayer/crc.c
+    src/AlgorithmLayer/rp_math.c
+    src/AlgorithmLayer/pid.c
     src/TaskLayer/all_task.cpp
     src/TaskLayer/conf_task.cpp
     src/DeviceLayer/device.cpp
