@@ -16,7 +16,8 @@ target_include_directories(app PRIVATE
     src/AlgorithmLayer/include     
     src/DeviceLayer                 
     src/TaskLayer                  
-    src/ModuleLayer                 
+    src/ModuleLayer
+    src/ConfigLayer
 )
 
 target_sources(app PRIVATE
