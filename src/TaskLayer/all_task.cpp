@@ -29,7 +29,8 @@ extern "C" void StartHeartbeatTask(void *arg1, void *arg2, void *arg3)
     LOG_INF("Heartbeat Task started");
     while (true)
     {
-        k_sleep(K_MSEC(10));
+        Motor_Heartbeat();
+        k_sleep(K_MSEC(100));
     }
 }
 

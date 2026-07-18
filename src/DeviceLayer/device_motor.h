@@ -31,8 +31,14 @@ typedef enum
     WHEEL_CNT,
 } Wheel_List_e;
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+    extern Motor_RM_t wheel_motor[WHEEL_CNT];
 
-extern Motor_RM_t wheel_motor[WHEEL_CNT];
-
-int Motor_Init(void);
-
+    int Motor_Init(void);
+    void Motor_Heartbeat(void);
+#ifdef __cplusplus
+}
+#endif

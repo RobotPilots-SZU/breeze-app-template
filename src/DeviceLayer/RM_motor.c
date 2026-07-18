@@ -12,7 +12,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "RM_motor.h"
-//#include "rp_math.h"
+#include "rp_math.h"
 
 static void Torque_to_Raw_Current(Motor_RM_t *motor);
 static void Angle_Sum_Cal(Motor_RM_t *motor);
@@ -45,6 +45,17 @@ static void Single_Motor_Sleep(Motor_RM_t *motor)
 }
 
 /**
+ * @brief  电机心跳失联检测
+ * @param  motor: 电机结构体
+ * @retval 无
+ */
+static void rm_motor_heart_beat(Motor_RM_t *rm_motor)
+{
+	Motor_RM_State_t *motor_state = rm_motor->state;
+	motor_state->status = get_motor_heartbeat_status(rm_motor->motor) ? DEV_ONLINE : DEV_OFFLINE;
+}
+
+/**
  *	@brief	解析RM标准电机的角度、速度、转矩电流与温度
  */
 static void rm_motor_update(Motor_RM_t *rm_motor)
@@ -54,11 +65,12 @@ static void rm_motor_update(Motor_RM_t *rm_motor)
 
 	motor_info->encoder = dev_rx_info->encoder;
 	Encoder_Sum_Cal(rm_motor);
+	Encoder_to_Motor_Angle(rm_motor);
 	motor_info->encoder_speed = dev_rx_info->speed;
 	motor_info->speed = RPM_to_Rads(rm_motor);
 	motor_info->torque_current_raw = dev_rx_info->iq;
 	Raw_Current_to_Torque(rm_motor);
-	motor_info->temperature = dev_rx_info->temp;
+	motor_info->temperature = dev_rx_info->specific_data.m3508.temp;
 }
 
 /**
@@ -71,6 +83,7 @@ void RM_Motor_Init(Motor_RM_t *motor)
 	motor->single_set_torque = Motor_Set_Torque;
 	motor->single_sleep = Single_Motor_Sleep;
 	motor->rx = rm_motor_update;
+	motor->single_heart_beat = rm_motor_heart_beat;
 	motor->type = _3508_Reduction; // 默认类型
 }
 

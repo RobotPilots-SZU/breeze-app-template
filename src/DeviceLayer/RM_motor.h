@@ -14,6 +14,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include <drivers/motor.h>
+#include "rp_device_config.h"
 #include "pid.h"
 
 /* Exported typedef ----------------------------------------------------------*/
@@ -54,6 +55,12 @@ typedef struct Motor_RM_Rx_Info_struct_t
 
 	uint16_t encoder_last;
 
+	float motor_angle;
+
+	float motor_angle_last;
+	
+	float motor_angle_sum;
+
 	int8_t temperature;
 } Motor_RM_Rx_Info_t;
 
@@ -80,10 +87,15 @@ typedef struct Motor_RM_Tx_Info_struct_t
 	
 }Motor_RM_Tx_Info_t;
 
+typedef struct Motor_RM_State_struct_t
+{
+	dev_work_state_t status;
+
+} Motor_RM_State_t;
 
 typedef struct Motor_RM_struct_t
 {
-	struct device *motor;
+	const struct device *motor;
 
 	Motor_RM_Type_e type; // 电机类型
 
@@ -91,16 +103,20 @@ typedef struct Motor_RM_struct_t
 
 	Motor_RM_Tx_Info_t *tx_info;
 
+	Motor_RM_State_t *state;
+
 	Motor_RM_Ctrl_Info_t *ctrl;
 
 	void (*single_set_torque)(struct Motor_RM_struct_t *motor);
 
-	void (*rx)(struct Motor_RM_struct_t *motor, uint8_t *rxBuf);
+	void (*rx)(struct Motor_RM_struct_t *rm_motor);
 
 	void (*single_sleep)(struct Motor_RM_struct_t *motor);
 
 	void (*single_init)(struct Motor_RM_struct_t *motor);
 	
+	void (*single_heart_beat)(struct Motor_RM_struct_t *motor);
+
 }Motor_RM_t;
 
 

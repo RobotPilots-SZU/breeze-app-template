@@ -208,13 +208,25 @@ int Motor_Init()
 
     for (int i = 0; i < WHEEL_CNT; i++)
     {
-        register_motor(wheel_motor[i].motor);// 这是通用的多电机注册函数
+        if (register_motor(wheel_motor[i].motor) < 0) // 这是通用的多电机注册函数
+        {
+            LOG_ERR("Failed to register motor %d", i);
+            return -ENODEV;
+        }
     }
 
     for (int i = 0; i < WHEEL_CNT; i++)
     {
-        wheel_motor[i].single_sleep(); // 内部使用通用的多电机扭矩控制函数
+        wheel_motor[i].single_sleep(&wheel_motor[i]); // 内部使用通用的多电机扭矩控制函数
     }
 
     return 0;
+}
+
+void Motor_Heartbeat()
+{
+    for (int i = 0; i < WHEEL_CNT; i++)
+    {
+        wheel_motor[i].single_heart_beat(&wheel_motor[i]);
+    }
 }

@@ -11,7 +11,7 @@
 
 void ave_fil_init(ave_filter_t *ave_fil)
 {
-	memset(ave_fil->value, 0, ave_filter_times_max);
+	memset(ave_fil->value, 0, ave_filter_times_max * sizeof(ave_fil->value[0]));
 	ave_fil->value_ave = 0;
 	ave_fil->index = 0;
 	ave_fil->filter_times = 0;

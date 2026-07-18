@@ -40,6 +40,7 @@ target_include_directories(app PRIVATE
     src/DeviceLayer                 # 设备层头文件（如 imu_ekf.hpp）
     src/TaskLayer                   # 任务层头文件（如 conf_task.hpp）
     src/ModuleLayer                 # 模块层头文件（如 Chassis_Posture.h）
+    src/ConfigLayer                 # 配置层头文件（如 rp_device_config.h）
 )
 
 
