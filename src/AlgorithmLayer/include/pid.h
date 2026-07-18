@@ -26,8 +26,17 @@ typedef struct pid_ctrl {
 	float out_max;
 } pid_ctrl_t;
 
-void single_pid_ctrl(pid_ctrl_t *pid);
-float all_pid_calc(pid_ctrl_t *out, pid_ctrl_t *inn, float target,float mea_out, float mea_in, float inner_kp,uint8_t err_cal_mode);
-float feedforward_pid_calc(float K_ff, pid_ctrl_t *out, pid_ctrl_t *inn,float target, float mea_out, float mea_in,float inner_kp, uint8_t err_cal_mode);
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+	void single_pid_ctrl(pid_ctrl_t *pid);
+	float all_pid_calc(pid_ctrl_t *out, pid_ctrl_t *inn, float target, float mea_out, float mea_in, float inner_kp, uint8_t err_cal_mode);
+	float feedforward_pid_calc(float K_ff, pid_ctrl_t *out, pid_ctrl_t *inn, float target, float mea_out, float mea_in, float inner_kp, uint8_t err_cal_mode);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -1,6 +1,5 @@
 #pragma once
 
-#include <drivers/motor.h>
 #include "RM_motor.h"
 
 #ifdef CONFIG_CAN_TX_MANAGER

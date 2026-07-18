@@ -13,7 +13,7 @@
 #define __RM_MOTOR_H
 
 /* Includes ------------------------------------------------------------------*/
-#include <drivers/motor.h>
+#include <drivers/bldcm/bldcm.h>
 #include "rp_device_config.h"
 #include "pid.h"
 
