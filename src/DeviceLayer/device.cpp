@@ -35,7 +35,6 @@ int Device_Init(void)
         return ret;
     }
 
-<<<<<<< HEAD
     ret = Motor_Init();
     if (ret != 0)
     {
@@ -43,8 +42,6 @@ int Device_Init(void)
         return ret;
     }
 
-=======
->>>>>>> origin/fhw_test
     vofa_rtt_init();
     return 0;
 }
