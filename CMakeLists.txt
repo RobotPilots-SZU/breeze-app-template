@@ -14,16 +14,25 @@ project(infantry_down_test)
 # 直接添加所有源文件到 app
 target_sources(app PRIVATE
     src/main.cpp
-    src/DeviceLayer/bmi_stream.cpp
     src/AlgorithmLayer/Algorithm.cpp
     src/AlgorithmLayer/algo_ekf_filter.cpp
     src/AlgorithmLayer/algo_kf_filter.cpp
+    src/AlgorithmLayer/ave_filter.c
+    src/AlgorithmLayer/crc.c
+    src/AlgorithmLayer/rp_math.c
+    src/AlgorithmLayer/pid.c
     src/TaskLayer/all_task.cpp
     src/TaskLayer/conf_task.cpp
+    src/DeviceLayer/bmi_stream.cpp
     src/DeviceLayer/device.cpp
     src/DeviceLayer/device_remote.c
     src/DeviceLayer/rtt.c
     src/DeviceLayer/device_motor.c
+    src/DeviceLayer/RM_motor.c
+    src/DeviceLayer/imu_wrapper.cpp
+    src/DeviceLayer/rtt.c
+    src/ModuleLayer/Chassis_Posture.c
+
 )
 
 # 添加头文件路径
@@ -31,4 +40,8 @@ target_include_directories(app PRIVATE
     src/AlgorithmLayer/include      # 算法层头文件
     src/DeviceLayer                 # 设备层头文件（如 imu_ekf.hpp）
     src/TaskLayer                   # 任务层头文件（如 conf_task.hpp）
+    src/ModuleLayer                 # 模块层头文件（如 Chassis_Posture.h）
+    src/ConfigLayer                 # 配置层头文件（如 rp_device_config.h）
 )
+
+

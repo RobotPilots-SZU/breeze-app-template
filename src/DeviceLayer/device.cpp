@@ -28,13 +28,20 @@ int Device_Init(void)
         LOG_ERR("Remote_Init failed with error code: %d", ret);
         return ret;
     }
+    
+    ret = Motor_Init();
+    if (ret != 0)
+    {
+        LOG_ERR("Motor_Init failed with error code: %d", ret);
+        return ret;
+    }
+    
     ret = breeze::Imu_Init(breeze::imu_sensor);
     if (ret != 0)
     {
         LOG_ERR("Imu_Init failed with error code: %d", ret);
         return ret;
     }
-
     vofa_rtt_init();
     return 0;
 }
