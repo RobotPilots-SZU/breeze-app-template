@@ -1,2 +1,14 @@
 build/
+<<<<<<< HEAD
 breeze.code-workspace
+=======
+
+# 配置文件
+*.vscode/
+*.code-workspace
+*.cfg
+
+infantry_down_d/
+breeze.code-workspace
+openocd.cfg
+>>>>>>> origin/fhw_test
