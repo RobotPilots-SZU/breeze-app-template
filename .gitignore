@@ -1,2 +1,6 @@
 build/
 breeze.code-workspace
+# 配置文件
+*.vscode/
+*.code-workspace
+*.cfg
