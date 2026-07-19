@@ -13,6 +13,7 @@ project(infantry_down_test)
 
 # 直接添加所有源文件到 app
 target_sources(app PRIVATE
+
     src/main.cpp
     src/AlgorithmLayer/Algorithm.cpp
     src/AlgorithmLayer/algo_ekf_filter.cpp
@@ -32,6 +33,7 @@ target_sources(app PRIVATE
     src/DeviceLayer/imu_wrapper.cpp
     src/DeviceLayer/rtt.c
     src/ModuleLayer/Chassis_Posture.c
+    src/ModuleLayer/gimbal.c
 
 )
 
