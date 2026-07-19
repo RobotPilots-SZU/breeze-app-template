@@ -1,0 +1,92 @@
+/* This file will automatic applyed when using damiao_mc02 board */
+// &usart1 {
+//     status = "okay";
+//     current-speed = <921600>;
+//     clocks = <&rcc STM32_CLOCK(APB2, 4)>,
+//              <&rcc STM32_SRC_PLL2_Q USART16_SEL(1)>;
+//     stop-bits = "1";
+//     data-bits = <8>;
+//     parity = "none";
+//     pinctrl-0 = <&usart1_tx_pa9 &usart1_rx_pa10>;
+//     pinctrl-names = "default";
+//     dmas =  <&dmamux1 10 42 STM32_DMA_PERIPH_TX>,   // TX: DMA2 Stream 2, request 42
+//     <&dmamux1 9 41 STM32_DMA_PERIPH_RX>;   // RX: DMA2 Stream 1, request 41
+//     dma-names = "tx", "rx";
+//     fifo-enable;
+// };
+
+// &usart2 {
+//     // RS485
+//     status = "okay";
+//     clocks = <&rcc STM32_CLOCK(APB1, 17)>,
+//              <&rcc STM32_SRC_PLL2_Q USART2345678_SEL(1)>;
+//     pinctrl-0 = <&usart2_de_pd4 &usart2_rx_pd6 &usart2_tx_pd5>;
+//     pinctrl-names = "default";
+//     de-enable;
+// };
+
+// &usart3 {
+//     // RS485
+//     status = "okay";
+//     clocks = <&rcc STM32_CLOCK(APB1, 18)>,
+//              <&rcc STM32_SRC_PLL2_Q USART2345678_SEL(1)>;
+//     pinctrl-0 = <&usart3_de_pb14 &usart3_rx_pd9 &usart3_tx_pd8>;
+//     pinctrl-names = "default";
+//     de-enable;
+// };
+
+// &uart5 {
+//     // SBUS
+//     status = "okay";
+//     clocks = <&rcc STM32_CLOCK(APB1, 20)>,
+//              <&rcc STM32_SRC_PLL2_Q USART2345678_SEL(1)>;
+//     dmas = <&dmamux1 3 65 STM32_DMA_PERIPH_RX>;    // RX: DMA1 Stream 2, request 65
+//     dma-names = "rx";
+//     // rx-invert;
+//     pinctrl-0 = <&uart5_rx_pd2 &uart5_tx_pc12>;
+//     pinctrl-names = "default";
+//     current-speed = <100000>;
+//     data-bits = <8>;
+//     parity = "even";
+//     stop-bits = "1";
+// };
+
+// &usart10 {
+//     status = "okay";
+//     dmas =  <&dmamux1 5 119 STM32_DMA_PERIPH_TX>,    // TX: DMA1 Stream 5, request 119
+//     <&dmamux1 6 118 STM32_DMA_PERIPH_RX>;    // RX: DMA1 Stream 6, request 118
+//     dma-names = "tx", "rx";
+//     pinctrl-0 = <&usart10_rx_pe2 &usart10_tx_pe3>;
+//     pinctrl-names = "default";
+// };
+
+&uart7 {
+    dmas =  <&dmamux1 3 80 STM32_DMA_PERIPH_TX>,    // TX: DMA1 Stream 3, request 80
+    <&dmamux1 4 79 STM32_DMA_PERIPH_RX>;    // RX: DMA1 Stream 4, request 79
+    dma-names = "tx", "rx";
+};
+
+&uart8 {
+    dmas =  <&dmamux1 11 82 STM32_DMA_PERIPH_TX>,    // TX: DMA2 Stream 3, request 82
+    <&dmamux1 12 81 STM32_DMA_PERIPH_RX>;    // RX: DMA2 Stream 4, request 81
+    dma-names = "tx", "rx";
+};
+
+&uart9 {
+    dmas =  <&dmamux1 0 117 STM32_DMA_PERIPH_TX>,    // TX: DMA1 Stream 0, request 117
+    <&dmamux1 7 116 STM32_DMA_PERIPH_RX>;    // RX: DMA1 Stream 7, request 116
+    dma-names = "tx", "rx";
+};
+
+&usart10 {
+    dmas =  <&dmamux1 5 119 STM32_DMA_PERIPH_TX>,    // TX: DMA1 Stream 5, request 119
+    <&dmamux1 6 118 STM32_DMA_PERIPH_RX>;    // RX: DMA1 Stream 6, request 118
+    dma-names = "tx", "rx";
+};
+
+/ {
+    chosen {
+        /* 自定义一个 chosen 节点 */
+        zephyr,vofa-uart = &usart10;
+    };
+};

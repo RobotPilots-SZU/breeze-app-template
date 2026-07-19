@@ -1,0 +1,33 @@
+/* This file will automatic applyed when using rm_typec board */
+// &usart6 {
+//     pinctrl-0 = <&usart6_tx_pg14 &usart6_rx_pg9>;
+//     dmas =  <&dma2 6 5 STM32_DMA_PERIPH_TX STM32_DMA_FIFO_FULL>,    // TX: DMA2 Stream 6, request 5
+//     <&dma2 1 5 STM32_DMA_PERIPH_RX STM32_DMA_FIFO_FULL>;    // RX: DMA2 Stream 1, request 5
+//     stop-bits = "1";
+//     data-bits = <8>;
+//     parity = "none";
+//     dma-names = "tx", "rx";
+//     pinctrl-names = "default";
+//     current-speed = <921600>;
+//     status = "okay";
+// };
+
+// &usart1 {
+//     pinctrl-0 = <&usart1_tx_pa9 &usart1_rx_pb7>;
+//     dmas =  <&dma2 7 4 STM32_DMA_PERIPH_TX STM32_DMA_FIFO_FULL>,    // TX: DMA2 Stream 7, request 4
+//     <&dma2 2 4 STM32_DMA_PERIPH_RX STM32_DMA_FIFO_FULL>;    // RX: DMA2 Stream 2, request 4
+//     stop-bits = "1";
+//     data-bits = <8>;
+//     parity = "none";
+//     dma-names = "tx", "rx";
+//     pinctrl-names = "default";
+//     current-speed = <921600>;
+//     status = "okay";
+// };
+
+/ {
+    chosen {
+        /* 自定义一个 chosen 节点 */
+        zephyr,vofa-uart = &usart6;
+    };
+};
