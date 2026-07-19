@@ -1,7 +1,6 @@
 {
 	"folders": [
 		{
-			"name": "infantry_down_test",
 			"path": "."
 		}
 	],
@@ -16,8 +15,58 @@
 			"${workspaceFolder}/../../breeze",
 			"${workspaceFolder}/../../breeze-sdk/zephyr",
 			"${workspaceFolder}/../../breeze-sdk/modules/*/*"
-		],
-		"cortex-debug.variableUseNaturalFormat": true
+		]
+	},
+	"tasks": {
+		"version": "2.0.0",
+		"tasks": [
+			{
+				"label": "West: Build",
+				"type": "shell",
+				"command": "bash -c 'source .venv/bin/activate && west build'", // 关键修改：激活虚拟环境
+				"group": {
+					"kind": "build",
+					"isDefault": true
+				}
+			},
+			{
+				"label": "West: Menu Config",
+				"type": "shell",
+				"command": "west",
+				"args": [
+					"build",
+					"-t",
+					"menuconfig"
+				],
+				"problemMatcher": []
+			},
+			{
+				"label": "West: Debugserver (OpenOCD)",
+				"type": "shell",
+				"command": "west",
+				"args": [
+					"debugserver",
+					"-d",
+					"${workspaceFolder}",
+					"-r",
+					"openocd"
+				],
+				"problemMatcher": []
+			},
+			{
+				"label": "West: Debugserver (JLink)",
+				"type": "shell",
+				"command": "west",
+				"args": [
+					"debugserver",
+					"-d",
+					"${workspaceFolder}",
+					"-r",
+					"jlink"
+				],
+				"problemMatcher": []
+			}
+		]
 	},
 	"launch": {
 		"version": "0.2.0",
@@ -28,30 +77,42 @@
 				"name": "Debug with OpenOCD",
 				"request": "launch",
 				"type": "cortex-debug",
+				"serverpath": "/usr/local/bin/openocd",			
 				"servertype": "openocd",
 				//更改openocd.cfg成适合你的开发板的配置文件
+				"gdbPath": "/home/fhw/breeze-workspace/breeze-sdk/toolchain/gnu/arm-zephyr-eabi/bin/arm-zephyr-eabi-gdb",
 				"configFiles": [
-					"/home/bana/breeze-workspace/breeze-app/infantry_down_test/openocd.cfg"
+					"/home/fhw/breeze-workspace/breeze-app/Infantry_dog/openocd.cfg"
 				],
 				"searchDir": [
-					"/usr/share/openocd/scripts"
+					"/usr/local/share/openocd/scripts"		
 				],
 				"runToEntryPoint": "main",
 				"showDevDebugOutput": "parsed",
-				"device": "STM32F407",
-				"svdFile": "/home/bana/breeze-workspace/breeze-sdk/zephyr/dts/arm/st/stm32f407.svd",
-				"gdbPath": "/home/bana/breeze-workspace/breeze-sdk/toolchain/zephyr-sdk-0.17.4/arm-zephyr-eabi/bin/arm-zephyr-eabi-gdb",
-				"objdumpPath": "/home/bana/breeze-workspace/breeze-sdk/toolchain/zephyr-sdk-0.17.4/arm-zephyr-eabi/bin/arm-zephyr-eabi-objdump",
-				"rttConfig": {
+				"device": "STM32H723",
+				"svdFile": "${workspaceFolder}/../../breeze/boards/damiao/mc02/support/STM32H723.svd",
+				// "device": "STM32F407",
+				// "svdFile": "${workspaceFolder}/../../breeze/boards/dji/rm_typec/support/STM32F407.svd",		
+				"objdumpPath": "/home/fhw/breeze-workspace/breeze-sdk/toolchain/gnu/arm-zephyr-eabi/bin/arm-zephyr-eabi-objdump",		
+				 "rttConfig": {
 					"enabled": true,
-					"address": "auto", // F4 的 SRAM 起始地址
+					"address": "auto",
 					"decoders": [
 						{
-							"port": 0,
-							"type": "console"
-						}
+						"label": "RTT Debug",
+						"port": 0,
+						"type": "console"
+						},
+						// {
+						//   "label": "RTT Data",
+						//   "port": 1,
+						//   "type": "console"
+						// }
 					]
-				}
+				},
+				"preLaunchCommands": [
+    				"set remotetimeout 2000"
+				],
 			}
 		]
 	}
