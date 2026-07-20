@@ -29,7 +29,8 @@ Infantry_dog/
     │   ├── algo_kf_filter.cpp
     │   ├── ave_filter.c
     │   ├── crc.c
-    │   └── pid.c
+    │   ├── pid.c   
+    │   └── rp_math.c
     ├── ConfigLayer/
     │   ├── config_chassis.h
     │   ├── rp_config.h
@@ -53,7 +54,9 @@ Infantry_dog/
     │   └── rtt.h
     ├── ModuleLayer/
     │   ├── Chassis_Posture.c
-    │   └── Chassis_Posture.h
+    │   ├── Chassis_Posture.h
+    │   ├── chassis.c
+    │   ├── chassis.h
     │   ├── infantry.c
     │   └── infantry.h
     └── TaskLayer/
