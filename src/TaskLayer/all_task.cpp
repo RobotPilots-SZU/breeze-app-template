@@ -7,7 +7,7 @@ LOG_MODULE_REGISTER(all_task, LOG_LEVEL_INF);
 
 extern "C" void StartSystemUpdateTask(void *arg1, void *arg2, void *arg3)
 {
-    LOG_INF("System Update Task started");
+    LOG_INF("System Task started");
     while (true)
     {
         breeze::Imu_Process();
@@ -17,7 +17,7 @@ extern "C" void StartSystemUpdateTask(void *arg1, void *arg2, void *arg3)
 
 extern "C" void StartUpdateTask(void *arg1, void *arg2, void *arg3)
 {
-    // 注意：参数名统一为 arg3，不要写 arg3t
+    LOG_INF("Update Task started");
     while (true)
     {
         k_sleep(K_MSEC(10));
