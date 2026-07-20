@@ -52,6 +52,8 @@ Infantry_dog/
     ├── ModuleLayer/
     │   ├── Chassis_Posture.c
     │   └── Chassis_Posture.h
+    │   ├── infantry.c
+    │   └── infantry.h
     └── TaskLayer/
         ├── all_task.cpp
         ├── conf_task.cpp
