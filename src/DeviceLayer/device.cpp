@@ -16,13 +16,16 @@ SENSOR_DT_STREAM_IODEV(gyro_iodev, DT_NODELABEL(bmi08x_gyro), STREAM_TRIGGERS);
 RTIO_DEFINE_WITH_MEMPOOL(ctx, 16, 16, 64, 128, sizeof(void *));
 /* 参数说明：名称, sq大小, cq大小, 内存池块数, 每块大小, 对齐方式 */
 
+/* 遥控器 */
+const struct device *remote_dev = DEVICE_DT_GET(DT_ALIAS(remote0));
+
 //-------------------------------------------------------------------------------
 
 int Device_Init(void)
 {
     int ret = 0;
 
-    ret = Remote_Init();
+    ret = Remote_Init(remote_dev);
     if (ret != 0)
     {
         LOG_ERR("Remote_Init failed with error code: %d", ret);
