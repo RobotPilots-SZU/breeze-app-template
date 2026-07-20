@@ -29,6 +29,7 @@ target_sources(app PRIVATE
     src/DeviceLayer/RM_motor.c
     src/DeviceLayer/rc_sensor.c
     src/DeviceLayer/imu_wrapper.cpp
+    src/DeviceLayer/iwdg.c
     src/DeviceLayer/rtt.c
     src/ModuleLayer/Chassis_Posture.c
     src/ModuleLayer/chassis.c

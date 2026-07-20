@@ -33,6 +33,10 @@ extern "C" void StartHeartbeatTask(void *arg1, void *arg2, void *arg3)
     while (true)
     {
         Motor_Heartbeat();
+        
+        /* 喂狗 */
+        IWDG_Feed(iwdg_dev, IWDG_Channel_ID);
+        
         k_sleep(K_MSEC(100));
     }
 }
