@@ -2,6 +2,7 @@
 #include <zephyr/logging/log.h>
 #include "conf_task.hpp"
 #include "device.hpp"				// 设备
+#include "infantry.h"
 
 LOG_MODULE_REGISTER(all_task, LOG_LEVEL_INF);
 
@@ -10,7 +11,7 @@ extern "C" void StartSystemUpdateTask(void *arg1, void *arg2, void *arg3)
     LOG_INF("System Task started");
     while (true)
     {
-        breeze::Imu_Process();
+
         k_sleep(K_MSEC(1));
     }
 }
@@ -20,7 +21,9 @@ extern "C" void StartUpdateTask(void *arg1, void *arg2, void *arg3)
     LOG_INF("Update Task started");
     while (true)
     {
-        k_sleep(K_MSEC(10));
+        breeze::Imu_Process();
+        infantry.work(&infantry);
+        k_sleep(K_MSEC(1));
     }
 }
 

@@ -31,6 +31,7 @@ target_sources(app PRIVATE
     src/DeviceLayer/imu_wrapper.cpp
     src/DeviceLayer/rtt.c
     src/ModuleLayer/Chassis_Posture.c
+    src/ModuleLayer/chassis.c
     src/ModuleLayer/infantry.c
 )
 
