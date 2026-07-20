@@ -45,6 +45,8 @@ int Device_Init(void)
         LOG_ERR("Imu_Init failed with error code: %d", ret);
         return ret;
     }
+    chassis.init(&chassis);
+    infantry.init(&infantry);
     vofa_rtt_init();
     return 0;
 }

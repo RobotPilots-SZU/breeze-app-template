@@ -4,7 +4,7 @@
 
 //#include "board_protocol.h"
 //#include "rc_protocol.h"
-//#include "chassis.h"
+#include "chassis.h"
 //#include "gimbal.h"
 //#include "launch.h" 
 //#include "vision.h"
@@ -79,7 +79,7 @@ static void Infantry_Work(Infantry_t* infantry)
 {
 	Infantry_Status_Update(infantry);
 	
-//	chassis.work(&chassis);
+	chassis.work(&chassis);
 //	gimbal.work(&gimbal);
 //	launch.work(&launch);
 //	vision.work(&vision);

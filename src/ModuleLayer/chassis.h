@@ -1,7 +1,7 @@
 #ifndef __CHASSIS_H
 #define __CHASSIS_H
 
-#include  "device_motor.h" 
+#include "device_motor.h"
 
 #define   CHASSIS_MAX_SPEED     60
 #define   FRONT_MAX_SPEED       40
@@ -71,9 +71,9 @@ typedef struct{
 
 typedef struct{
 	float  wheel_feed_out[WHEEL_CNT];// 重力前馈输出
-	float  wheel_initial_out[WHEEL_CNT];
-	float  wheel_powerd_out[WHEEL_CNT];
-	float  wheel_end_out[WHEEL_CNT];
+	float  wheel_initial_out[WHEEL_CNT];//原先输出
+	float  wheel_powerd_out[WHEEL_CNT];//功率限制输出
+	float  wheel_end_out[WHEEL_CNT];//最终输出
 
 }Chassis_Out_t;
 
