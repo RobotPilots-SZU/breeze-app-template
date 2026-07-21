@@ -52,14 +52,17 @@ extern "C" void StartMonitorTask(void *arg1, void *arg2, void *arg3)
 
         
 		// 发送数据
-		float vofa_data[] = {
-			(float)k_uptime_get_32() / 1000.0f,
-			(float)breeze::imu_sensor.gimbal_info.G_Yaw,
-			(float)breeze::imu_sensor.gimbal_info.G_Pitch,
-			(float)breeze::imu_sensor.gimbal_info.G_Roll,
-		};
-		SEGGER_RTT_Write(RTT_CH_VOFA_1, vofa_data, sizeof(vofa_data));
-		SEGGER_RTT_Write(RTT_CH_VOFA_1, vofa_tail, sizeof(vofa_tail));
+        float vofa_data[] = {
+            (float)k_uptime_get_32() / 1000.0f,
+            (float)wheel_motor[0].ctrl->speed_ctrl->target,
+            (float)wheel_motor[0].ctrl->speed_ctrl->err,
+            (float)wheel_motor[0].tx_info->torque,
+            (float)wheel_motor[1].ctrl->speed_ctrl->target,
+            (float)wheel_motor[1].ctrl->speed_ctrl->err,
+            (float)wheel_motor[1].tx_info->torque,
+        };
+        SEGGER_RTT_Write(RTT_CH_VOFA_1, vofa_data, sizeof(vofa_data));
+        SEGGER_RTT_Write(RTT_CH_VOFA_1, vofa_tail, sizeof(vofa_tail));
 
         k_sleep(K_MSEC(4));
     }

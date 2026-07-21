@@ -1008,10 +1008,10 @@ static void Chassis_Cmd_Transmit(Chassis_t* chassis)
 	  chassis->wheel[WHEEL_LB]->tx_info->torque = 0;
 	
 	#else
-	  chassis->wheel->motor[WHEEL_RF]->tx_info->torque = chassis->out.wheel_end_out[WHEEL_RF];
-	  chassis->wheel->motor[WHEEL_RB]->tx_info->torque = chassis->out.wheel_end_out[WHEEL_RB];
-	  chassis->wheel->motor[WHEEL_LF]->tx_info->torque = chassis->out.wheel_end_out[WHEEL_LF];
-	  chassis->wheel->motor[WHEEL_LB]->tx_info->torque = chassis->out.wheel_end_out[WHEEL_LB];
+	  chassis->wheel[WHEEL_RF]->tx_info->torque = chassis->out.wheel_end_out[WHEEL_RF];
+	  chassis->wheel[WHEEL_RB]->tx_info->torque = chassis->out.wheel_end_out[WHEEL_RB];
+	  chassis->wheel[WHEEL_LF]->tx_info->torque = chassis->out.wheel_end_out[WHEEL_LF];
+	  chassis->wheel[WHEEL_LB]->tx_info->torque = chassis->out.wheel_end_out[WHEEL_LB];
 	#endif
 	
 	for(uint8_t i = 0;i<WHEEL_CNT;i++)
