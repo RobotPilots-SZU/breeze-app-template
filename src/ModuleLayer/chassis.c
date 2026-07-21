@@ -1,15 +1,17 @@
-#include "chassis.h"
 #include "infantry.h"
-// #include "board_protocol.h"
-// #include "judge.h"
-// #include "cap.h"
-// #include "gimbal.h"
+#include "chassis.h"
 #include "config_chassis.h"
 #include "rp_math.h"
 #include <stdint.h>
 #include <zephyr/kernel.h>
 #include "rc_sensor.h"
 #include "imu_wrapper.h"
+#include "rp_config.h"
+// #include "board_protocol.h"
+// #include "judge.h"
+// #include "cap.h"
+// #include "gimbal.h"
+
 static void Chassis_Init(Chassis_t* chassis);
 static void Chassis_Status_Update(Chassis_t* chassis);
 static void Chassis_Target_Update(Chassis_t* chassis);
@@ -445,20 +447,20 @@ static void Chassis_Pid_Calculate(Chassis_t* chassis)
 	{
 		for(uint8_t i = 0;i<WHEEL_CNT;i++)
 		{
-			if(wheel_sleep[i] == 0 && fabsf(chassis->wheel[i]->rx_info->speed) >= 0.01f)
-			{
-				chassis->wheel[i]->ctrl->speed_ctrl->target = chassis->target.motor_speed[i];
-			  chassis->wheel[i]->ctrl->speed_ctrl->measure = chassis->wheel[i]->rx_info->speed;
-			  chassis->wheel[i]->ctrl->speed_ctrl->err = chassis->wheel[i]->ctrl->speed_ctrl->target - chassis->wheel[i]->ctrl->speed_ctrl->measure;
+			// if(wheel_sleep[i] == 0 && fabsf(chassis->wheel[i]->rx_info->speed) >= 0.01f)
+			// {
+			// 	chassis->wheel[i]->ctrl->speed_ctrl->target = chassis->target.motor_speed[i];
+			//   chassis->wheel[i]->ctrl->speed_ctrl->measure = chassis->wheel[i]->rx_info->speed;
+			//   chassis->wheel[i]->ctrl->speed_ctrl->err = chassis->wheel[i]->ctrl->speed_ctrl->target - chassis->wheel[i]->ctrl->speed_ctrl->measure;
 			
-			  single_pid_ctrl(chassis->wheel[i]->ctrl->speed_ctrl);
+			//   single_pid_ctrl(chassis->wheel[i]->ctrl->speed_ctrl);
 			
-			  chassis->out.wheel_initial_out[i] = chassis->wheel[i]->ctrl->speed_ctrl->out;
-			}
-			else{
+			//   chassis->out.wheel_initial_out[i] = chassis->wheel[i]->ctrl->speed_ctrl->out;
+			// }
+			// else{
 			  wheel_sleep[i] = 1;
 				chassis->out.wheel_initial_out[i] = 0;
-			}
+			//}
 		}
 		
 		Chassis_Offline_Process(chassis);
