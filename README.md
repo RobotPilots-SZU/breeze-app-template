@@ -29,7 +29,8 @@ Infantry_dog/
     │   ├── algo_kf_filter.cpp
     │   ├── ave_filter.c
     │   ├── crc.c
-    │   └── pid.c
+    │   ├── pid.c   
+    │   └── rp_math.c
     ├── ConfigLayer/
     │   ├── config_chassis.h
     │   ├── rp_config.h
@@ -45,6 +46,8 @@ Infantry_dog/
     │   ├── imu_ekf.hpp
     │   ├── imu_wrapper.cpp
     │   ├── imu_wrapper.h
+    │   ├── iwdg.h
+    │   ├── iwdg.c
     │   ├── rc_sensor.c
     │   ├── rc_sensor.h
     │   ├── rtt.c
@@ -54,6 +57,9 @@ Infantry_dog/
     │   └── Chassis_Posture.h
     │   ├── gimbal.c
     │   └── gimbal.h
+    │   ├── Chassis_Posture.h
+    │   ├── chassis.c
+    │   ├── chassis.h
     │   ├── infantry.c
     │   └── infantry.h
     └── TaskLayer/
