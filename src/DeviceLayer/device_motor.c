@@ -4,7 +4,7 @@ LOG_MODULE_REGISTER(motor, LOG_LEVEL_INF);
 
 pid_ctrl_t wheel_speed_pid[WHEEL_CNT] = {
     [WHEEL_LF] = {
-        .kp = 0,
+        .kp = 1,
         .ki = 0,
         .kd = 0,
         .integral_max = 0,
@@ -12,7 +12,7 @@ pid_ctrl_t wheel_speed_pid[WHEEL_CNT] = {
 
     },
     [WHEEL_LB] = {
-        .kp = 0,
+        .kp = 1,
         .ki = 0,
         .kd = 0,
         .integral_max = 0,
@@ -20,7 +20,7 @@ pid_ctrl_t wheel_speed_pid[WHEEL_CNT] = {
 
     },
     [WHEEL_RF] = {
-        .kp = 0,
+        .kp = 1,
         .ki = 0,
         .kd = 0,
         .integral_max = 0,
@@ -28,7 +28,7 @@ pid_ctrl_t wheel_speed_pid[WHEEL_CNT] = {
 
     },
     [WHEEL_RB] = {
-        .kp = 0,
+        .kp = 1,
         .ki = 0,
         .kd = 0,
         .integral_max = 0,
