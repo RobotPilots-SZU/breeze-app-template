@@ -94,11 +94,11 @@ static void Chassis_Status_Update(Chassis_t* chassis)
 			{
 				chassis->mode = C_BOSS;
 			}
-			// else if(infantry.flag.hole_flag == false && board.rx_meg->state_meg.is_down == false)
+			// else if(infantry.flag.hole_flag == false && board.rx_meg->state_meg.is_down == 2)
 			// {
 			// 	chassis->mode = C_SLAVE;
 			// }
-			// else if(infantry.flag.hole_flag == false && board.rx_meg->state_meg.is_down == true)
+			// else if(infantry.flag.hole_flag == false && board.rx_meg->state_meg.is_down != 2)
 			// {
 			// 	chassis->mode = C_BOSS;
 			// }
@@ -175,42 +175,38 @@ static void __attribute__((unused)) Chassis_Key_Input(Chassis_t *chassis)
 
 static void Chassis_Target_Update(Chassis_t* chassis)
 {
-	//float yaw_angle_err_rad = gimbal.info.yaw_mec_err_act*100;
-	
+#ifdef test_cycle
+	//float yaw_angle_err_rad = -gimbal.info.yaw_mec_err_raw;
+#else
+	//float yaw_angle_err_rad = gimbal.info.yaw_mec_err_act;
+#endif
 	float front_speed,left_speed,cycle_speed;
-	
 	static float straight_yaw = 0;
 	
 	static bool last_turn = false;
 	
 	static float last_front_cnt=0,last_left_cnt=0,now_front_cnt,now_left_cnt;
 	
-	now_front_cnt = step_limit_filter(rc_sensor->info->W.cnt - rc_sensor->info->S.cnt, last_front_cnt, 5);
-	now_left_cnt = step_limit_filter(rc_sensor->info->A.cnt - rc_sensor->info->D.cnt, last_left_cnt, 5);
+	now_front_cnt = step_limit_filter(rc_sensor->info->W.cnt - rc_sensor->info->S.cnt, last_front_cnt, 400);
+	now_left_cnt = step_limit_filter(rc_sensor->info->A.cnt - rc_sensor->info->D.cnt, last_left_cnt, 400);
  
 	if(infantry.ctrl == RC_CTRL)
 	{
 		front_speed = -rc_sensor->info->ch3/660.f * FRONT_MAX_SPEED;
-    left_speed = rc_sensor->info->ch2/660.f * LEFT_MAX_SPEED;
-	  cycle_speed = rc_sensor->info->ch0/660.f * CYCLE_MAX_SPEED;
+		left_speed = rc_sensor->info->ch2/660.f * LEFT_MAX_SPEED;
+		cycle_speed = rc_sensor->info->ch0/660.f * CYCLE_MAX_SPEED;
 	
 	}
 	else{
-	  front_speed = (float)now_front_cnt/ KEY_W_CNT_MAX* FRONT_MAX_SPEED;
-	  left_speed = -(float)now_left_cnt/ KEY_A_CNT_MAX* LEFT_MAX_SPEED;
-	  cycle_speed = rc_sensor->info->mouse_vy *0.0001;
-	  cycle_speed = constrain(cycle_speed,-CYCLE_MAX_SPEED,CYCLE_MAX_SPEED);
+		front_speed = (float)now_front_cnt/ KEY_W_CNT_MAX* FRONT_MAX_SPEED;
+		left_speed = -(float)now_left_cnt/ KEY_A_CNT_MAX* LEFT_MAX_SPEED;
+		cycle_speed = rc_sensor->info->mouse_vy *0.0001;
+		cycle_speed = constrain(cycle_speed,-CYCLE_MAX_SPEED,CYCLE_MAX_SPEED);
 	}
 	
 	last_front_cnt = now_front_cnt;
 	last_left_cnt = now_left_cnt;
 	
-	
-// 	if (abs(yaw_angle_err_rad) > PI/2)   //掉头反着开
-//   {
-//     front_speed *= -1.f;
-//     left_speed *= -1.f;
-//   }
 	
 	switch (chassis->mode)
 	{
@@ -266,17 +262,19 @@ static void Chassis_Target_Update(Chassis_t* chassis)
         //     left_speed *= -1.f;
         //   }
 		#else
-		#endif
-				
-		}		
-		// 	else{
-		// 		chassis->target.cycle_speed = -1*yaw_angle_err_rad * yaw_angle_err_rad*sgn(yaw_angle_err_rad)*0.1f;
-		// 		chassis->target.cycle_speed = constrain(chassis->target.cycle_speed,-CYCLE_MAX_SPEED,CYCLE_MAX_SPEED);
-		// 	}
-			
-	    // // front和right值计算
-	    // chassis->target.front_speed = front_speed * cos(yaw_angle_err_rad) + left_speed * sin(yaw_angle_err_rad);
-	    // chassis->target.left_speed = left_speed * cos(yaw_angle_err_rad) - front_speed * sin(yaw_angle_err_rad);
+		#endif		
+		// // front和right值计算
+	    // chassis->target.front_speed = front_speed * cos(yaw_angle_err_rad) - left_speed * sin(yaw_angle_err_rad);
+	    // chassis->target.left_speed = left_speed * cos(yaw_angle_err_rad) + front_speed * sin(yaw_angle_err_rad);
+		}
+		else
+		{
+			// chassis->target.cycle_speed = -1 * 600.f * yaw_angle_err_rad * yaw_angle_err_rad * sgn(yaw_angle_err_rad);
+			// chassis->target.cycle_speed = constrain(chassis->target.cycle_speed, -CYCLE_MAX_SPEED, CYCLE_MAX_SPEED);
+			// chassis->target.front_speed = front_speed * cos(yaw_angle_err_rad) - left_speed * sin(yaw_angle_err_rad);
+			// chassis->target.left_speed = left_speed * cos(yaw_angle_err_rad) + front_speed * sin(yaw_angle_err_rad);
+		}	
+	    
 		
      	straight_yaw = imu_get_yaw();
 		
@@ -339,9 +337,9 @@ static void Chassis_Positive_Calculate(Chassis_t* chassis)
 	
 	//float yaw_angle_err_rad = gimbal.info.yaw_mec_err_act;
 	
-	chassis->measure.front_speed = (- speed_lf - speed_lb + speed_rb + speed_rf)/4;
-	chassis->measure.left_speed = (speed_lf - speed_lb - speed_rb + speed_rf)/4;
-	chassis->measure.cycle_speed = (speed_lf + speed_lb + speed_rb + speed_rf)/4;
+	chassis->measure.front_speed = (- speed_lf - speed_lb + speed_rb + speed_rf)/4.f;
+	chassis->measure.left_speed = (speed_lf - speed_lb - speed_rb + speed_rf)/4.f;
+	chassis->measure.cycle_speed = (speed_lf + speed_lb + speed_rb + speed_rf)/4.f;
 	
  //视觉所需车速度，x向前y向左
 //   board.tx_pkt->car_pkt.v_x = chassis->measure.front_speed * cos(yaw_angle_err_rad) 
@@ -593,23 +591,17 @@ static void __attribute__((unused)) Chassis_Power_Limit(Chassis_t *chassis)
 float result = 0;
 float tx_result = 0;
 static float Calculate_Predicted_Power(float* coefficient,float i, float w) {
-    // 系数
-	
+// 系数
 //	k0 + k1 * I + k2 * ω + k3 * I * ω + k4 * I**2 + k5 * ω**2
-	
-	
 	float k0 = coefficient[0];
-  float k1 = coefficient[1];
-  float k2 = coefficient[2];
+	float k1 = coefficient[1];
+	float k2 = coefficient[2];
 	float k3 = coefficient[3];
 	float k4 = coefficient[4];
 	float k5 = coefficient[5];
 
-    // 计算多项式曲面值
-//    result = k0 + k1 * i + k2 * w + k3 * i * w + k4 * i*i + k5 * w*w;
-
-//    return result;  
-	 return k0 + k1 * i + k2 * w + k3 * i * w + k4 * i*i + k5 * w*w;  
+	// 计算多项式曲面值
+	return k0 + k1 * i + k2 * w + k3 * i * w + k4 * i*i + k5 * w*w;  
 }
 /**
   * @Name    Calculate_Current_Out
