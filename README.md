@@ -57,7 +57,6 @@ Infantry_dog/
     │   └── Chassis_Posture.h
     │   ├── gimbal.c
     │   └── gimbal.h
-    │   ├── Chassis_Posture.h
     │   ├── chassis.c
     │   ├── chassis.h
     │   ├── infantry.c
