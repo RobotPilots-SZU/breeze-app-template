@@ -71,7 +71,7 @@ static void Infantry_Init(Infantry_t* infantry)
 
 static uint8_t last_thumbwheel_step[4];
 
-#define WHEEL_UP_TO_ONCE 		(rc_info->thumbwheel.step[0] && rc_info->thumbwheel.step[0] != last_thumbwheel_step[0])||(rc_info->thumbwheel.step[0] && rc_info->thumbwheel.step[2] != last_thumbwheel_step[2])
+#define WHEEL_UP_TO_ONCE 		(rc_info->thumbwheel.step[0] && rc_info->thumbwheel.step[0] != last_thumbwheel_step[0])||(rc_info->thumbwheel.step[2] && rc_info->thumbwheel.step[2] != last_thumbwheel_step[2])
 #define WHEEL_DOWN_TO_ONCE 		(rc_info->thumbwheel.step[1] && rc_info->thumbwheel.step[1] != last_thumbwheel_step[1])||(rc_info->thumbwheel.step[3] && rc_info->thumbwheel.step[3] != last_thumbwheel_step[3])
 
 /**
