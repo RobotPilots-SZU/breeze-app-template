@@ -34,8 +34,8 @@ target_sources(app PRIVATE
     src/ModuleLayer/Chassis_Posture.c
     src/ModuleLayer/gimbal.c
     src/ModuleLayer/infantry.c
+    src/ProtocolLayer/board_protocol.c
 )
-
 # 添加头文件路径
 target_include_directories(app PRIVATE
     src/AlgorithmLayer/include      # 算法层头文件
@@ -43,6 +43,6 @@ target_include_directories(app PRIVATE
     src/TaskLayer                   # 任务层头文件（如 conf_task.hpp）
     src/ModuleLayer                 # 模块层头文件（如 Chassis_Posture.h）
     src/ConfigLayer                 # 配置层头文件（如 rp_device_config.h）
+    src/ProtocolLayer               # 协议层头文件 (如 board_protocol.h)
 )
-
 

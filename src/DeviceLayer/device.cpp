@@ -1,4 +1,5 @@
 #include "device.hpp"
+#include "board_protocol.h"
 #include <zephyr/logging/log.h>
 
 LOG_MODULE_REGISTER(device, LOG_LEVEL_INF);
@@ -18,6 +19,10 @@ RTIO_DEFINE_WITH_MEMPOOL(ctx, 16, 16, 64, 128, sizeof(void *));
 
 /* 遥控器 */
 const struct device *remote_dev = DEVICE_DT_GET(DT_ALIAS(remote0));
+
+/* 看门狗 */
+// 看门狗未配置，暂不启用
+// const struct device *iwdg_dev = DEVICE_DT_GET(DT_ALIAS(watchdog0));
 
 //-------------------------------------------------------------------------------
 
@@ -45,6 +50,13 @@ int Device_Init(void)
         LOG_ERR("Imu_Init failed with error code: %d", ret);
         return ret;
     }
+    ret = board.init(&board);
+    if (ret != 0)
+    {
+        LOG_ERR("Board_Init failed with error code: %d", ret);
+        return ret;
+    }
+
     vofa_rtt_init();
     return 0;
 }

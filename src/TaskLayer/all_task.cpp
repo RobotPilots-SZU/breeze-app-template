@@ -2,6 +2,7 @@
 #include <zephyr/logging/log.h>
 #include "conf_task.hpp"
 #include "device.hpp"				// 设备
+#include "board_protocol.h"
 
 LOG_MODULE_REGISTER(all_task, LOG_LEVEL_INF);
 
@@ -11,6 +12,13 @@ extern "C" void StartSystemUpdateTask(void *arg1, void *arg2, void *arg3)
     while (true)
     {
         breeze::Imu_Process();
+
+        board.tx_01(&board);
+        board.tx_02(&board);
+        board.tx_03(&board);
+        board.tx_04(&board);
+        board.heartbeat(&board);
+
         k_sleep(K_MSEC(1));
     }
 }
