@@ -7,5 +7,6 @@ build/
 
 drivers/
 infantry_down_d/
+infantry_down_new/
 breeze.code-workspace
 openocd.cfg

@@ -54,7 +54,9 @@ Infantry_dog/
     │   └── rtt.h
     ├── ModuleLayer/
     │   ├── Chassis_Posture.c
-    │   ├── Chassis_Posture.h
+    │   └── Chassis_Posture.h
+    │   ├── gimbal.c
+    │   └── gimbal.h
     │   ├── chassis.c
     │   ├── chassis.h
     │   ├── infantry.c
