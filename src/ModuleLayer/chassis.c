@@ -1,9 +1,5 @@
-#include "chassis.h"
 #include "infantry.h"
-// #include "board_protocol.h"
-// #include "judge.h"
-// #include "cap.h"
-// #include "gimbal.h"
+#include "chassis.h"
 #include "config_chassis.h"
 #include "rp_math.h"
 #include <stdint.h>
@@ -11,6 +7,11 @@
 #include "rc_sensor.h"
 #include "imu_wrapper.h"
 #include "rp_config.h"
+// #include "board_protocol.h"
+// #include "judge.h"
+// #include "cap.h"
+// #include "gimbal.h"
+
 static void Chassis_Init(Chassis_t* chassis);
 static void Chassis_Status_Update(Chassis_t* chassis);
 static void Chassis_Target_Update(Chassis_t* chassis);

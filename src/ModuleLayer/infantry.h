@@ -1,12 +1,9 @@
 #ifndef __INFANTRY_H
 #define __INFANTRY_H
 
-#include <drivers/remote.h>
 #include <stdbool.h>
 #include <stdint.h>
-
-#define  WHEEL_UP_TO_ONCE        rc_info->thumbwheel.step[0] != last_thumbwheel_step[0] || rc_info->thumbwheel.step[1] != last_thumbwheel_step[1]    
-#define  WHEEL_DOWN_TO_ONCE        rc_info->thumbwheel.step[2] != last_thumbwheel_step[2] || rc_info->thumbwheel.step[3] != last_thumbwheel_step[3]   
+#include "rc_sensor.h"
 
 
 typedef enum{
@@ -20,7 +17,7 @@ typedef enum{
 	I_INIT,
 	I_MEC,
 	I_IMU,
-	I_TURN,
+	I_TURN,//小陀螺
   I_HOLE,
 }Infantry_Mode_e;
 
