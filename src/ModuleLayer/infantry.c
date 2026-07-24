@@ -3,9 +3,11 @@
 #include "rp_config.h"
 #include <zephyr/logging/log.h>
 LOG_MODULE_DECLARE(infantry_down_test, LOG_LEVEL_INF);
-#include "board_protocol.h"
-#include "gimbal.h"
-#include "launch.h" 
+
+//#include "board_protocol.h"
+//#include "rc_protocol.h"
+//#include "gimbal.h"
+//#include "launch.h" 
 //#include "vision.h"
 //#include "ui.h"
 //#include "cap.h"
@@ -69,6 +71,8 @@ static void Infantry_Init(Infantry_t* infantry)
 
 static uint8_t last_thumbwheel_step[4];
 
+#define WHEEL_UP_TO_ONCE 		(rc_info->thumbwheel.step[0] && rc_info->thumbwheel.step[0] != last_thumbwheel_step[0])||(rc_info->thumbwheel.step[2] && rc_info->thumbwheel.step[2] != last_thumbwheel_step[2])
+#define WHEEL_DOWN_TO_ONCE 		(rc_info->thumbwheel.step[1] && rc_info->thumbwheel.step[1] != last_thumbwheel_step[1])||(rc_info->thumbwheel.step[3] && rc_info->thumbwheel.step[3] != last_thumbwheel_step[3])
 
 /**
  * @brief  步兵整车工作函数
@@ -79,8 +83,8 @@ static void Infantry_Work(Infantry_t* infantry)
 	Infantry_Status_Update(infantry);
 	
 	chassis.work(&chassis);
-	gimbal.work(&gimbal);
-	launch.work(&launch);
+//	gimbal.work(&gimbal);
+//	launch.work(&launch);
 //	vision.work(&vision);
 }
 
@@ -252,79 +256,77 @@ static void Rc_Status_Update(Infantry_t* infantry)
 	  infantry->ctrl = RC_CTRL;
 	}
 	
-	if(launch.state == L_LOCK)
-	{
-		launch.shoot_lock = 1;
-	}
-	else{
-	  if(launch.shoot_lock == 0)
-	  {   //只要左拨杆是变回中间以及从中间离开都上锁，防止右拨杆在下面导致一瞬间连发
-		  if(rc_extend_data.s1_info.status == mid_R || rc_extend_data.s1_info.status == up_R || rc_extend_data.s1_info.status == down_R)           
-		  {
-		    launch.shoot_lock = 1;
-		  }
-	  }
-	  if(launch.shoot_lock == 1)
-	  {
-		  if(rc_info->s1 == RC_SW_MID && rc_info->s2 == RC_SW_MID)        //只有左右拨杆都在中间才能接触发射锁
-		  {
-			  launch.shoot_lock = 0;
-		  }
-	  }
-				
- }
+	//发射部分代码，以下大部分都是
+//	if(launch.state == L_LOCK)
+//	{
+//		launch.shoot_lock = 1;
+//	}
+//	else{
+//	  if(launch.shoot_lock == 0)
+//	  {
+//		  if(rc_extend_data.s1_info.status == mid_R || rc_extend_data.s1_info.status == up_R || rc_extend_data.s1_info.status == down_R)           //只要左拨杆是变回中间以及从中间离开都上锁，防止右拨杆在下面导致一瞬间连发
+//		  {
+//		    launch.shoot_lock = 1;
+//		  }
+//	  }
+//	  if(launch.shoot_lock == 1)
+//	  {
+//		  if(rc_info->s1 == RC_SW_MID && rc_info->s2 == RC_SW_MID)        //只有左右拨杆都在中间才能接触发射锁
+//		  {
+//			  launch.shoot_lock = 0;
+//		  }
+//	  }
+//				
+//  }
 	
 	if(rc_info->s1 == RC_SW_MID)
 	{
 		if(rc_info->s2 == RC_SW_UP)
-    	{
-		  	launch.mode = SINGLE_SHOT;
-		  	launch.shoot_level = !launch.shoot_lock;
-			//裁判系统里内容
-			// shoot_statistics.shoot_mode = 0;
-		  	// shoot_statistics.shooting_flag=0;
-		  	if(launch.state == L_UNLOCK && launch.shoot_lock == 0)
-		  	{
-			  	if(rc_extend_data.s2_info.status == up_R)                            //单发跳变开始计时拨弹延迟
-				{
-					//Shooting_Cmd_Excute_Tick_Calculating(0);
-				}
-	  		}
-	  	}
-	else if(rc_info->s2 == RC_SW_MID)
-	{
-		launch.mode = SINGLE_SHOT;
-		launch.shoot_level = 0;
-		//judge	
-		// shoot_statistics.shoot_mode = 0;
-	    // shoot_statistics.shooting_flag = 0;
-	}
-	else if(rc_info->s2 == RC_SW_DOWN)
-	{  
-		launch.mode = REPEAT_SHOT;
-		launch.shoot_level = !launch.shoot_lock;
-			
-		if(launch.state == L_UNLOCK && launch.shoot_lock == 0)
-		{
-			//judge
-			//shoot_statistics.shoot_mode = 1;
-			//连发模式下shooting_flag为0时是第一次，此时计时，后面shooting_flag变1后不会再进入这里，计时在串口中断才开始
-			// if(shoot_statistics.shooting_flag == 0 && rc_extend_data.s2_info.status == keep_R)         
-			// {
-			// 	//Shooting_Cmd_Excute_Tick_Calculating(0);
-			//     shoot_statistics.shooting_flag = 1;
-		  	// }
-		
-		}
+    {
+//		  launch.mode = SINGLE_SHOT;
+//		  launch.shoot_level = !launch.shoot_lock;
+//			
+//			shoot_statistics.shoot_mode = 0;
+//		  shoot_statistics.shooting_flag=0;
+//		  if(launch.state == L_UNLOCK && launch.shoot_lock == 0)
+//		  {
+//			  if(rc_extend_data.s2_info.status == up_R)                            //单发跳变开始计时拨弹延迟
+//			  {
+//				  Shooting_Cmd_Excute_Tick_Calculating(0);
+//			  }
+//	  	}
+	  }
+	  else if(rc_info->s2 == RC_SW_MID)
+	  {
+//		  launch.mode = SINGLE_SHOT;
+//		  launch.shoot_level = 0;
+//			
+//			shoot_statistics.shoot_mode = 0;
+//	    shoot_statistics.shooting_flag = 0;
+	  }
+	  else if(rc_info->s2 == RC_SW_DOWN)
+	  {
+//		  launch.mode = REPEAT_SHOT;
+//		  launch.shoot_level = !launch.shoot_lock;
+//			
+//			if(launch.state == L_UNLOCK && launch.shoot_lock == 0)
+//		  {
+//			  shoot_statistics.shoot_mode = 1;
+//			  if(shoot_statistics.shooting_flag == 0 && rc_extend_data.s2_info.status == keep_R)         //连发模式下shooting_flag为0时是第一次，此时计时，后面shooting_flag变1后不会再进入这里，计时在串口中断才开始
+//			  {
+//				  Shooting_Cmd_Excute_Tick_Calculating(0);
+//			    shoot_statistics.shooting_flag = 1;
+//		  	}
+//		
+//		  }
 	  }
 	}
-	else
-	{
-	  	launch.mode = SINGLE_SHOT;
-		launch.shoot_level = 0;
-		
-		// shoot_statistics.shoot_mode = 0;
-	  	// shoot_statistics.shooting_flag = 0;
+	else{
+//	  launch.mode = SINGLE_SHOT;
+//		 launch.shoot_level = 0;
+//		
+//		shoot_statistics.shoot_mode = 0;
+//	  shoot_statistics.shooting_flag = 0;
 	}
 	
 	#if GIMBAL_SWITCH == 0
@@ -376,16 +378,8 @@ static void Key_Status_Update(Infantry_t* infantry)
 	  	infantry->mode = I_HOLE;
 
 	}
-	if (rc_info->F.status == KEY_BOARD_RELEASE_TO_PRESS)
-	{
-		infantry->flag.mec_flag = !infantry->flag.mec_flag;
-
-		if (infantry->flag.mec_flag == true)
-		{
-			infantry->mode = I_MEC;
-		}
-	}
-
+	
+	
 	if((infantry->flag.hole_flag == false && infantry->mode != I_HOLE) || infantry->flag.chassis_reset.value == false)
 	{
 	  if(infantry->flag.R_turn_flag.value == false && infantry->flag.L_turn_flag.value == false)
@@ -422,55 +416,44 @@ static void Key_Status_Update(Infantry_t* infantry)
 	  }
 	
 	}
-
-	// 视觉2，3，4，5只能同时进一个，进去后屏蔽1
-	if (rc_info->Z.status == KEY_BOARD_RELEASE_TO_PRESS)
+	
+	//视觉2，3，4，5只能同时进一个，进去后屏蔽1
+	if(rc_info->Z.status == KEY_BOARD_RELEASE_TO_PRESS)
 	{
 		infantry->flag.vision_flag = 2;
 	}
-	else if (rc_info->X.status == KEY_BOARD_RELEASE_TO_PRESS)
+	else if(rc_info->X.status == KEY_BOARD_RELEASE_TO_PRESS)
 	{
 		infantry->flag.vision_flag = 3;
 	}
-	else if (rc_info->C.status == KEY_BOARD_RELEASE_TO_PRESS)
+	else if(rc_info->C.status == KEY_BOARD_RELEASE_TO_PRESS)
 	{
 		infantry->flag.vision_flag = 4;
 	}
-
-	if (infantry->flag.vision_flag <= 1)
+	
+	if(infantry->flag.vision_flag <= 1)
 	{
-		if (rc_info->mouse_btn_r.status == KEY_BOARD_SHORT_PRESS)
+		if(rc_info->mouse_btn_r.status == KEY_BOARD_LONG_PRESS)
 		{
 			infantry->flag.vision_flag = 1;
 		}
 	}
-	if (rc_info->mouse_btn_r.cnt == 0)
+	//发射相关
+//	if(rc_info->mouse_btn_l.cnt == 0)
+//	{
+//		launch.shoot_level = 0;
+//	}
+//	else{
+//	  launch.shoot_level = 1;
+//	}
+	
+	
+	if(rc_info->B.status == KEY_BOARD_RELEASE_TO_PRESS)
 	{
-		infantry->flag.vision_flag = 0;
+//		launch.state = !launch.state;
 	}
-
-	if (rc_info->mouse_btn_l.cnt == 0)
-	{
-		launch.mode = SINGLE_SHOT;
-		launch.shoot_level = 0;
-	}
-	else if (rc_info->mouse_btn_l.cnt >= 150)
-	{
-		launch.mode = REPEAT_SHOT;
-		launch.shoot_level = 1;
-	}
-	else
-	{
-		launch.shoot_level = 1;
-		if (launch.state != 1)
-			launch.state = 1;
-	}
-
-	if (rc_info->B.status == KEY_BOARD_RELEASE_TO_PRESS)
-	{
-		launch.state = 1 - launch.state;
-	}
-
+	
+	
 	if(rc_info->Ctrl.status == KEY_BOARD_RELEASE_TO_PRESS)         //一键取消所有特殊模式，如果是退出狗洞先抬头，完整退出才变陀螺仪
 	{
 		if(infantry->mode == I_HOLE)
@@ -485,10 +468,7 @@ static void Key_Status_Update(Infantry_t* infantry)
 		}
 		
 	}
-	Spec_Flag_Update(&infantry->flag.U_turn_flag, (infantry->mode > I_INIT), true);
-	Spec_Flag_Update(&infantry->flag.R_turn_flag, (infantry->mode > I_INIT), true);
-	Spec_Flag_Update(&infantry->flag.L_turn_flag, (infantry->mode > I_INIT), true);
-	Spec_Flag_Update(&infantry->flag.chassis_reset, (infantry->mode > I_INIT), true);
+	
 }
 
 /**
@@ -649,13 +629,13 @@ static void Infantry_Status_Update(Infantry_t* infantry)
 	{
 		if(!rc_sensor->is_online)
 		{
-			board.tx_pkt->car_pkt.car_state = 0;
+//			board.tx_pkt->car_pkt.car_state = 0;
 		}
 		
 		infantry->mode = I_SLEEP;
 		
-		launch.state = L_LOCK;
-		launch.shoot_lock = 1;
+//		launch.state = L_LOCK;
+//		launch.shoot_lock = 1;
 		infantry->flag.vision_flag = 0;
 		
 		Infantry_Flag_Clean(infantry);
@@ -667,78 +647,79 @@ static void Infantry_Status_Update(Infantry_t* infantry)
 		
 	}
 	
-	else
-	{
+	else{
 		
 		if(infantry->ctrl == RC_CTRL)
 		{
-     		board.tx_pkt->car_pkt.car_state = 1;
+//      board.tx_pkt->car_pkt.car_state = 1;
 		}
-	  	else if(infantry->ctrl == KEY_CTRL)
+	  else if(infantry->ctrl == KEY_CTRL)
 		{
-     		board.tx_pkt->car_pkt.car_state = 2;
-	  	}
+//      board.tx_pkt->car_pkt.car_state = 2;
+	  }
 	
-	  	if(infantry->mode == I_SLEEP || (infantry->flag.chassis_off == false && last_c_off == true))
-	  	{  
-			infantry->mode = I_INIT;
+	  if(infantry->mode == I_SLEEP || (infantry->flag.chassis_off == false && last_c_off == true))
+	  {  
+		  infantry->mode = I_INIT;
 		 
-		  	launch.state = L_LOCK;
-		  	launch.shoot_lock = 1;
-		  	infantry->flag.vision_flag = 0;
+//		  launch.state = L_LOCK;
+//		  launch.shoot_lock = 1;
+		  infantry->flag.vision_flag = 0;
 			
-		  	Infantry_Flag_Clean(infantry);
-//		  	cap_tx_info.bit_control.pre_charge_mode_en = 0;
-	 	}
-	  	else if(infantry->mode == I_INIT)
-	  	{
-			launch.state = L_LOCK;
-			launch.shoot_lock = 1;
-		  	infantry->flag.vision_flag = 0;
+		  Infantry_Flag_Clean(infantry);
+//		  cap_tx_info.bit_control.pre_charge_mode_en = 0;
+	  }
+	  else if(infantry->mode == I_INIT)
+	  {
+//		  launch.state = L_LOCK;
+//			launch.shoot_lock = 1;
+		  infantry->flag.vision_flag = 0;
 
-		  	// if(infantry->flag.gimbal_off == true)
-		  	// {
-		  	// 	infantry->mode = I_MEC;
-		  	// }
-		  	// else if(infantry->flag.broken_flag == true)
-			// {
-		  	// 	infantry->mode = I_MEC;
-		  	// }
-		  	// else 
-			if(gimbal.gimbal_reset_flag == true)
-			{
-				infantry->mode = I_IMU;
-				//infantry->mode = I_MEC;
-		  	}
+		  infantry->mode = I_MEC;
+		  //			if(infantry->flag.gimbal_off == true)
+		  //	  	{
+		  //			  infantry->mode = I_MEC;
+		  //
+		  //	  	}
+		  //			else if(infantry->flag.broken_flag == true)
+		  //		  {
+		  //			 	infantry->mode = I_MEC;
+		  //		  }
+		  //		  else
+		  //			if(gimbal.gimbal_reset_flag == true)
+		  //			{
+		  //			  infantry->mode = I_IMU;
+		  //				//infantry->mode = I_MEC;
+		  //		  }
 
-		  	// 初始化时不接受滚轮改变
-		  	last_thumbwheel_step[0] = rc_info->thumbwheel.step[0];
-		  	last_thumbwheel_step[1] = rc_info->thumbwheel.step[1];
-		  	last_thumbwheel_step[2] = rc_info->thumbwheel.step[2];
-		  	last_thumbwheel_step[3] = rc_info->thumbwheel.step[3];
-	  	}
-	  	else
-	  	{
-			if (infantry->last_mode == I_INIT)
-			{
-				last_thumbwheel_step[0] = rc_info->thumbwheel.step[0];
-				last_thumbwheel_step[1] = rc_info->thumbwheel.step[1];
-				last_thumbwheel_step[2] = rc_info->thumbwheel.step[2];
-				last_thumbwheel_step[3] = rc_info->thumbwheel.step[3];
-			}
-			if (infantry->ctrl == RC_CTRL)
-			{
-				Rc_Status_Update(infantry);
-			}
-			else if (infantry->ctrl == KEY_CTRL)
-			{
-				Key_Status_Update(infantry);
-			}
+		  // 初始化时不接受滚轮改变
+		  last_thumbwheel_step[0] = rc_info->thumbwheel.step[0];
+		  last_thumbwheel_step[1] = rc_info->thumbwheel.step[1];
+		  last_thumbwheel_step[2] = rc_info->thumbwheel.step[2];
+		  last_thumbwheel_step[3] = rc_info->thumbwheel.step[3];
+	  }
+	  else
+	  {
+		  if (infantry->last_mode == I_INIT)
+		  {
+			  last_thumbwheel_step[0] = rc_info->thumbwheel.step[0];
+			  last_thumbwheel_step[1] = rc_info->thumbwheel.step[1];
+			  last_thumbwheel_step[2] = rc_info->thumbwheel.step[2];
+			  last_thumbwheel_step[3] = rc_info->thumbwheel.step[3];
+		  }
+		  if (infantry->ctrl == RC_CTRL)
+		  {
+			  Rc_Status_Update(infantry);
+		  }
+		  else if (infantry->ctrl == KEY_CTRL)
+		  {
+			  Key_Status_Update(infantry);
+		  }
 
-			if (infantry->flag.gimbal_off == true && last_g_off == false)
-			{
-				infantry->mode = I_MEC;
-			}
+		  if (infantry->flag.gimbal_off == true && last_g_off == false)
+		  {
+			  infantry->mode = I_MEC;
+		  }
 	  }
 	}
 
