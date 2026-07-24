@@ -665,9 +665,7 @@ static void Infantry_Status_Update(Infantry_t* infantry)
 		last_thumbwheel_step[2] = rc_info->thumbwheel.step[2];
 		last_thumbwheel_step[3] = rc_info->thumbwheel.step[3];
 		
-	}
-	
-	else
+	}else
 	{
 		
 		if(infantry->ctrl == RC_CTRL)

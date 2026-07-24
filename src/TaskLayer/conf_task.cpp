@@ -14,7 +14,7 @@ namespace infantry_down_test
 
     /* ---------- 定义栈空间（实例化） ---------- */
     K_KERNEL_STACK_DEFINE(system_update_stack, STACK_SIZE_SYSTEM);
-    K_KERNEL_STACK_DEFINE(update_stack, STACK_SIZE_UPDATE);
+    K_THREAD_STACK_DEFINE(update_stack, STACK_SIZE_UPDATE);
     K_KERNEL_STACK_DEFINE(heartbeat_stack, STACK_SIZE_HEARTBEAT);
     K_KERNEL_STACK_DEFINE(monitor_stack, STACK_SIZE_MONITOR);
 
@@ -37,7 +37,7 @@ namespace infantry_down_test
         /* 2. 创建 Update Task（主任务） */
         k_thread_create(&update_thread_ctrl,
                         update_stack,
-                        K_KERNEL_STACK_SIZEOF(update_stack),
+                        K_THREAD_STACK_SIZEOF(update_stack),
                         StartUpdateTask,
                         nullptr, nullptr, nullptr,
                         proc_UpdateTaskPriority,
