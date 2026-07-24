@@ -36,6 +36,7 @@ target_sources(app PRIVATE
     src/ModuleLayer/gimbal.c
     src/ModuleLayer/chassis.c
     src/ModuleLayer/infantry.c
+    src/ModuleLayer/launch.c
     src/ProtocolLayer/board_protocol.c
 )
 # 添加头文件路径
