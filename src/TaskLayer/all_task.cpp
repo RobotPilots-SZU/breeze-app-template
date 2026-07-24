@@ -16,7 +16,6 @@ extern "C" void StartSystemUpdateTask(void *arg1, void *arg2, void *arg3)
         board.tx_02(&board);
         board.tx_03(&board);
         board.tx_04(&board);
-        board.heartbeat(&board);
 
         k_sleep(K_MSEC(1));
     }
@@ -39,7 +38,7 @@ extern "C" void StartHeartbeatTask(void *arg1, void *arg2, void *arg3)
     while (true)
     {
         Motor_Heartbeat();
-        
+        board.heartbeat(&board);
         /* 喂狗 */
         IWDG_Feed(iwdg_dev, IWDG_Channel_ID);
         
