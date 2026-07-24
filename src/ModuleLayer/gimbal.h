@@ -4,15 +4,15 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#define   YAW_MEC_ZERO_ANGLE          -0.67270875
+#define   YAW_MEC_ZERO_ANGLE          -0.67270875f
 #define   PITCH_MEC_ZERO_ANGLE        0.f 
-#define   PITCH_MEC_MAX_ANGLE         30.f*PI/180
-#define   PITCH_MEC_MIN_ANGLE         -3.f*PI/180
+#define   PITCH_MEC_MAX_ANGLE         30.f*PI/180.f
+#define   PITCH_MEC_MIN_ANGLE         -3.f*PI/180.f
 
 #define   PITCH_IMU_MAX_ANGLE         (gimbal->info.pitch_imu + (PITCH_MEC_MAX_ANGLE - gimbal->info.pitch_mec)/PI*180.f)
 #define   PITCH_IMU_MIN_ANGLE         (gimbal->info.pitch_imu - (gimbal->info.pitch_mec - PITCH_MEC_MIN_ANGLE)/PI*180.f)
 
-#define   PI      3.1415926
+#define   PI      3.1415926f
 
 typedef enum{
 	G_SLEEP,

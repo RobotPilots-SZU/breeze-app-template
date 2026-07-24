@@ -133,7 +133,7 @@ static void Gimbal_Init_Process(Gimbal_t* gimbal)
 
 	reset_tick ++;
 	
-	if(abs(gimbal->info.yaw_mec_err_raw) <= 0.3f/180.f*PI && abs(gimbal->info.pitch_mec_err_raw) <= 0.3f/180.f*PI\
+	if(fabsf(gimbal->info.yaw_mec_err_raw) <= 0.3f/180.f*PI && fabsf(gimbal->info.pitch_mec_err_raw) <= 0.3f/180.f*PI\
 	   &&board.rx_meg->state_meg.is_down == 2)
 	{
 		gimbal->gimbal_reset_flag = true;
@@ -152,14 +152,13 @@ static void Gimbal_Init_Process(Gimbal_t* gimbal)
 	}
 }
 
-
-static void Gimbal_Direct_Update(Gimbal_t* gimbal)
+static __attribute__((unused)) void Gimbal_Direct_Update(Gimbal_t *gimbal)
 {
-	if(abs(gimbal->info.yaw_mec_err_raw) <= PI/4)
+	if(fabsf(gimbal->info.yaw_mec_err_raw) <= PI/4)
 	{
 		
 	}
-	else if(abs(gimbal->info.yaw_mec_err_raw) >= 3*PI/4)
+	else if(fabsf(gimbal->info.yaw_mec_err_raw) >= 3*PI/4)
 	{
 		
 	}
@@ -211,7 +210,7 @@ static void  Gimbal_Slave_Update(Gimbal_t* gimbal)
 		
 		}
 		
-		gimbal->target.pitch_mec_tar = motor_half_cycle(gimbal->target.pitch_mec_tar,2*PI);
+		gimbal->target.pitch_mec_tar = motor_half_cycle(gimbal->target.pitch_mec_tar,2.f*PI);
 		
 		gimbal->target.pitch_mec_tar = constrain(gimbal->target.pitch_mec_tar,PITCH_MEC_MIN_ANGLE,PITCH_MEC_MAX_ANGLE);
 		
@@ -254,14 +253,14 @@ static void  Gimbal_Boss_Update(Gimbal_t* gimbal)
 	if(infantry.flag.chassis_reset.value == true)
 	{
 		gimbal->target.yaw_mec_tar = gimbal->config.yaw_zero[FRONT];
-		if(abs(motor_half_cycle(gimbal->target.yaw_mec_tar - gimbal->info.yaw_mec,2 * PI)) <= 4.f/180.f * PI)
+		if(fabsf(motor_half_cycle(gimbal->target.yaw_mec_tar - gimbal->info.yaw_mec,2 * PI)) <= 4.f/180.f * PI)
 		{
  		     infantry.flag.chassis_reset.value = false;
 		}
 
 	}
 	else{
-		if(abs(gimbal->info.yaw_mec_err_raw) <= PI/2)
+		if(fabsf(gimbal->info.yaw_mec_err_raw) <= PI/2)
 		{
 			gimbal->target.yaw_mec_tar = gimbal->config.yaw_zero[FRONT];
 		}
