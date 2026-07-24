@@ -12,8 +12,6 @@
 #define   PITCH_IMU_MAX_ANGLE         (gimbal->info.pitch_imu + (PITCH_MEC_MAX_ANGLE - gimbal->info.pitch_mec)/PI*180.f)
 #define   PITCH_IMU_MIN_ANGLE         (gimbal->info.pitch_imu - (gimbal->info.pitch_mec - PITCH_MEC_MIN_ANGLE)/PI*180.f)
 
-#define   PI      3.1415926f
-
 typedef enum{
 	G_SLEEP,
 	G_INIT,

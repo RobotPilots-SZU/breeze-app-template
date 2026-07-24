@@ -5,6 +5,8 @@
 #include <stdint.h>
 #include "rc_sensor.h"
 
+#define WHEEL_UP_TO_ONCE   ((rc_info->thumbwheel.step[0] && rc_info->thumbwheel.step[0] != last_thumbwheel_step[0]) || (rc_info->thumbwheel.step[2] && rc_info->thumbwheel.step[2] != last_thumbwheel_step[2]))
+#define WHEEL_DOWN_TO_ONCE ((rc_info->thumbwheel.step[1] && rc_info->thumbwheel.step[1] != last_thumbwheel_step[1]) || (rc_info->thumbwheel.step[3] && rc_info->thumbwheel.step[3] != last_thumbwheel_step[3]))
 
 typedef enum{
 	RC_CTRL,

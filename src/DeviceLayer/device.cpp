@@ -28,14 +28,14 @@ const struct device *iwdg_dev = DEVICE_DT_GET(DT_ALIAS(watchdog0));
 int Device_Init(void)
 {
     int ret = 0;
-
+    
     ret = IWDG_Init(iwdg_dev);
     if (ret != 0)
     {
         LOG_ERR("IWDG_Init failed with error code: %d", ret);
         return ret;
     }
-    
+
     ret = Remote_Init(remote_dev);
     if (ret != 0)
     {
@@ -64,7 +64,10 @@ int Device_Init(void)
     }
 
     chassis.init(&chassis);
+    gimbal.init(&gimbal);
+    launch.init(&launch);
     infantry.init(&infantry);
+    
     vofa_rtt_init();
     return 0;
 }
