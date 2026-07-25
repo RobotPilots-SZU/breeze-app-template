@@ -170,31 +170,103 @@ Motor_RM_t wheel_motor[WHEEL_CNT] = {
         .motor = DEVICE_DT_GET(CHASSIS_RB_NODE),
         .single_init = RM_Motor_Init,
     },
+};
+
+//DM_MOTOR-----------------------------------------------------------
+pid_ctrl_t gimbal_speed_pid[GIMBAL_CNT] = {
+    [YAW] = {
+        .kp = 0,
+        .ki = 0,
+        .kd = 0,
+        .integral_max = 0,
+        .out_max = 5.4,
+
+    },
+};
+
+pid_ctrl_t gimbal_angle_inn_pid[GIMBAL_CNT] = {
+    [YAW] = {
+        .kp = 0,
+        .ki = 0,
+        .kd = 0,
+        .integral_max = 0,
+        .out_max = 0,
+
+    },
 
 };
 
+pid_ctrl_t gimbal_angle_out_pid[GIMBAL_CNT] = {
+    [YAW] = {
+        .kp = 0,
+        .ki = 0,
+        .kd = 0,
+        .integral_max = 0,
+        .out_max = 3.8,
+
+    },
+};
+Motor_DM_Ctrl_Info_t gimbal_ctrl_info[GIMBAL_CNT] = {
+    [YAW] = {
+        .angle_ctrl_inner = &gimbal_angle_inn_pid[YAW],
+        .angle_ctrl_outer = &gimbal_angle_out_pid[YAW],
+        .speed_ctrl = &gimbal_speed_pid[YAW],
+    },
+};
+Motor_DM_Rx_Info_t Yaw_Rx_Info;
+Motor_DM_Tx_Info_t Yaw_Tx_Info;
+Motor_DM_State_t Yaw_State;
+
+Motor_DM_t gimbal_motor[GIMBAL_CNT] =
+    {
+        [YAW] =
+            {
+                .rx_info = &Yaw_Rx_Info,
+                .tx_info = &Yaw_Tx_Info,
+                .state = &Yaw_State,
+                .ctrl = &gimbal_ctrl_info[YAW],
+                .motor = DEVICE_DT_GET(GIMBAL_YAW_NODE),
+                .single_init = &DM_Single_Motor_Init,
+                .type = dm_4310,
+            },
+};
+
+//MOTOR_INIT----------------------------------------------------
 int Motor_Init()
 {
 #ifdef CONFIG_CAN_RX_MANAGER
     const struct device *rx_mgr = DEVICE_DT_GET(RX_MANAGER_NODE);
 #endif
 
-    for (int i = 0; i < WHEEL_CNT; i++)
+    // for (int i = 0; i < WHEEL_CNT; i++)
+    // {
+    //     if (!wheel_motor[i].motor)
+    //     {
+    //         LOG_ERR("Motor %d not found!", i);
+    //         return -ENODEV;
+    //     }
+    //     if (!device_is_ready(wheel_motor[i].motor))
+    //     {
+    //         LOG_ERR("Motor %d is not ready!", i);
+    //         return -ENODEV;
+    //     }
+    //     wheel_motor[i].single_init(&wheel_motor[i]);
+    // }
+
+    for (int i = 0; i < GIMBAL_CNT; i++)
     {
-        if (!wheel_motor[i].motor)
+        if (!gimbal_motor[i].motor)
         {
             LOG_ERR("Motor %d not found!", i);
             return -ENODEV;
         }
-        if (!device_is_ready(wheel_motor[i].motor))
+        if (!device_is_ready(gimbal_motor[i].motor))
         {
             LOG_ERR("Motor %d is not ready!", i);
             return -ENODEV;
         }
-        wheel_motor[i].single_init(&wheel_motor[i]);
+        gimbal_motor[i].single_init(&gimbal_motor[i]);
     }
-
-    
 
 #ifdef CONFIG_CAN_RX_MANAGER
     if (!rx_mgr)
@@ -211,18 +283,31 @@ int Motor_Init()
 
 
 
-    for (int i = 0; i < WHEEL_CNT; i++)
+    // for (int i = 0; i < WHEEL_CNT; i++)
+    // {
+    //     if (register_motor(wheel_motor[i].motor) < 0) // 这是通用的多电机注册函数
+    //     {
+    //         LOG_ERR("Failed to register motor %d", i);
+    //         return -ENODEV;
+    //     }
+    // }
+    for (int i = 0; i < GIMBAL_CNT; i++)
     {
-        if (register_motor(wheel_motor[i].motor) < 0) // 这是通用的多电机注册函数
+        if (register_motor(gimbal_motor[i].motor) < 0) // 这是通用的多电机注册函数
         {
             LOG_ERR("Failed to register motor %d", i);
             return -ENODEV;
         }
     }
 
-    for (int i = 0; i < WHEEL_CNT; i++)
+    // for (int i = 0; i < WHEEL_CNT; i++)
+    // {
+    //     wheel_motor[i].single_sleep(&wheel_motor[i]); // 内部使用通用的多电机扭矩控制函数
+    // }
+
+    for (int i = 0; i < GIMBAL_CNT; i++)
     {
-        wheel_motor[i].single_sleep(&wheel_motor[i]); // 内部使用通用的多电机扭矩控制函数
+        gimbal_motor[i].single_sleep(&gimbal_motor[i]);
     }
 
     return 0;
@@ -230,8 +315,13 @@ int Motor_Init()
 
 void Motor_Heartbeat()
 {
-    for (int i = 0; i < WHEEL_CNT; i++)
+    // for (int i = 0; i < WHEEL_CNT; i++)
+    // {
+    //     wheel_motor[i].single_heart_beat(&wheel_motor[i]);
+    // }
+
+    for (int i = 0; i < GIMBAL_CNT; i++)
     {
-        wheel_motor[i].single_heart_beat(&wheel_motor[i]);
+        gimbal_motor[i].single_heart_beat(&gimbal_motor[i]);
     }
 }
