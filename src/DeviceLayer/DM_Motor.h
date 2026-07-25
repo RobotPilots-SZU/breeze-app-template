@@ -2,34 +2,11 @@
 
 #define __DM_MOTOR_H
 
-
+#include <drivers/bldcm/bldcm.h>
+#include <drivers/bldcm/bldcm_dm.h>
 #include "rp_config.h"
-#include "rp_math.h"
 #include "pid.h"
 
-
-
-#ifndef __HT_MOTOR_H
-
-/*电机指令集*/
-
-typedef enum Motor_MIT_Command_enum_e
-
-{
-
-	Enter_Motor_Mode,	  // 使能电机控制(指示灯变绿)
-
-	Exit_Motor_Mode,	  // 失能电机控制(指示灯变红)
-
-	Zero_Position_Sensor, // 设定当前编码角度为零
-
-	Clear_Err,
-
-
-
-} Motor_MIT_Command_e;
-
-#endif
 
 #define KP_MIN 0.0f // N-m/rad
 
@@ -227,22 +204,14 @@ typedef struct Motor_DM_Ctrl_Info_struct_t
 
 	pid_ctrl_t *angle_ctrl_inner; // 角度环内环
 
-
-
 	bool Angle_Input_Flag;		  // 使用外部传感器的角度标志位：0不使用，1使用
 
 	bool Nearest_Return;		  // 半圈处理标志位：0不使用，1使用
 
 	pid_ctrl_t *angle_ctrl_outer; // 角度环外环
 
-
-
+	
 	pid_ctrl_t *speed_ctrl; // 速度环
-
-	pid_ctrl_t *position_inn;
-
-	pid_ctrl_t *position_out;
-
 } Motor_DM_Ctrl_Info_t;
 
 
@@ -274,8 +243,6 @@ typedef enum Motor_DM_TYPE_struct_e
 
 	dm_6006,
 
-
-
 } Motor_DM_TYPE_e;
 
 
@@ -286,7 +253,7 @@ typedef struct Motor_DM_struct_t
 
 {
 	const struct device *motor;
-	
+
 	Motor_DM_Rx_Info_t *rx_info;
 
 	Motor_DM_Tx_Info_t *tx_info;
@@ -309,7 +276,7 @@ typedef struct Motor_DM_struct_t
 
 	void (*single_set_angle)(struct Motor_DM_struct_t *motor);
 
-	void (*rx)(struct Motor_DM_struct_t *motor, uint8_t *rxBuf);
+	void (*rx)(struct Motor_DM_struct_t *motor);
 
 	void (*single_heart_beat)(struct Motor_DM_struct_t *motor);
 

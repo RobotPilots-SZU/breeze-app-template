@@ -1,6 +1,7 @@
 #pragma once
 
 #include "RM_motor.h"
+#include "DM_Motor.h"
 
 #ifdef CONFIG_CAN_TX_MANAGER
 #include <drivers/can_tx_manager.h>
@@ -16,6 +17,7 @@
 #define CHASSIS_LB_NODE DT_NODELABEL(chassis_lb)
 #define CHASSIS_RF_NODE DT_NODELABEL(chassis_rf)
 #define CHASSIS_RB_NODE DT_NODELABEL(chassis_rb)
+#define GIMBAL_YAW_NODE DT_NODELABEL(gimbal_yaw)
 
 #ifdef CONFIG_CAN_RX_MANAGER
 #define RX_MANAGER_NODE DT_NODELABEL(can_rx_mgr1)
@@ -30,11 +32,19 @@ typedef enum
     WHEEL_CNT,
 } Wheel_List_e;
 
+typedef enum
+{
+    YAW = 0,
+    GIMBAL_CNT,
+}
+Gimbal_List_e;
+
 #ifdef __cplusplus
 extern "C"
 {
 #endif
     extern Motor_RM_t wheel_motor[WHEEL_CNT];
+    extern Motor_DM_t gimbal_motor[GIMBAL_CNT];
 
     int Motor_Init(void);
     void Motor_Heartbeat(void);
