@@ -27,7 +27,6 @@ extern "C" void StartUpdateTask(void *arg1, void *arg2, void *arg3)
     while (true)
     {
         breeze::Imu_Process();
-        // infantry.work(&infantry);
         k_sleep(K_MSEC(1));
     }
 }
