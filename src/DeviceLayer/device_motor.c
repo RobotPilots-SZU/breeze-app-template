@@ -2,6 +2,7 @@
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(motor, LOG_LEVEL_INF);
 
+//RM_motor
 pid_ctrl_t wheel_speed_pid[WHEEL_CNT] = {
     [WHEEL_LF] = {
         .kp = 1,
@@ -173,6 +174,94 @@ Motor_RM_t wheel_motor[WHEEL_CNT] = {
 
 };
 
+//LK_motor
+/*LK4005 START*/
+// #ifdef DIAL_PID
+
+// pid_ctrl_t dail_speed =
+//     {
+//         .kp = 0.15f,
+//         .ki = 0.0f,
+//         .kd = 0.f,
+//         .integral_max = 500.f,
+//         .out_max = 1000.f,
+// };
+// pid_ctrl_t dail_position_out =
+//     {
+//         .kp = 0.10,
+//         .ki = 0.f,
+//         .kd = 0.f,
+//         .integral_max = 0.f,
+//         .out_max = 1000000.f,
+// };
+// pid_ctrl_t dail_position_inner =
+//     {
+//         .kp = 0.06f,
+//         .ki = 0.f,
+//         .kd = 0.f,
+//         .integral_max = 0.f,
+//         .out_max = 1000.f,
+// };
+
+// #else
+
+// pid_ctrl_t dail_speed =
+//     {
+//         .kp = 0.15f,
+//         .ki = 0.2f,
+//         .kd = 0.f,
+//         .integral_max = 500.f,
+//         .out_max = 1000.f,
+// };
+// pid_ctrl_t dail_position_out =
+//     {
+//         .kp = 0.20f,
+//         .ki = 0.f,
+//         .kd = 0.f,
+//         .integral_max = 0.f,
+//         .out_max = 1000000.f,
+// };
+// pid_ctrl_t dail_position_inner =
+//     {
+//         .kp = 0.1f,
+//         .ki = 0.f,
+//         .kd = 0.f,
+//         .integral_max = 0.f,
+//         .out_max = 1000.f,
+// };
+// #endif
+
+// dail_pid_info_t dail_pid = {
+//     .speed = &dail_speed,
+//     .position_inner = &dail_position_inner,
+//     .position_outer = &dail_position_out,
+// };
+
+// KT_motor_t dail_motor = {
+//     .lk_motor = DEVICE_DT_GET(DIAL_MOTOR_NODE),
+//     .KT_motor_info = {
+//         .id = {
+//             .tx_id = ID_DIAL,
+//             .rx_id = ID_DIAL,
+//             .drive_type = M_CAN1,
+//             .motor_type = KT4005,
+//         },
+//         .tx_info = {
+//             .angle_single_Control = 0,
+//             .angle_single_Control_maxSpeed = 0,
+//             .angle_single_Control_spinDirection = 0,
+//             .angle_add_Control = 0,
+//             .angle_add_Control_maxSpeed = 0,
+//             .angle_sum_Control = 0,
+//             .angle_sum_Control_maxSpeed = 0,
+//             .iqControl = 0,
+//             .speedControl = 0,
+//         },
+//     },
+//     .init = KT_motor_class_init,
+// };
+
+
 int Motor_Init()
 {
 #ifdef CONFIG_CAN_RX_MANAGER
@@ -193,6 +282,15 @@ int Motor_Init()
         }
         wheel_motor[i].single_init(&wheel_motor[i]);
     }
+
+    // if (!dail_motor.lk_motor) {
+    //     LOG_ERR("Dial motor device not found!");
+    //     return -ENODEV;
+    // }
+    // if (!device_is_ready(dail_motor.lk_motor)) {
+    //     LOG_ERR("Dial motor not ready!");
+    //     return -ENODEV;
+    // }
 
     
 
@@ -219,11 +317,22 @@ int Motor_Init()
             return -ENODEV;
         }
     }
+    // if(register_motor(dail_motor.lk_motor) < 0)
+    // {
+    //     LOG_ERR("Failed to register dial motor");
+    //     return -ENODEV;
+    // }
+    
 
     for (int i = 0; i < WHEEL_CNT; i++)
     {
         wheel_motor[i].single_sleep(&wheel_motor[i]); // 内部使用通用的多电机扭矩控制函数
     }
+    // motor_disable(dail_motor.lk_motor);  // 上电卸力
+    
+
+    // dail_motor.init(&dail_motor);
+    
 
     return 0;
 }

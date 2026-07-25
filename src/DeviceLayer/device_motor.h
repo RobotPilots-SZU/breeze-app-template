@@ -1,6 +1,7 @@
 #pragma once
 
 #include "RM_motor.h"
+#include "LK_motor.h"
 
 #ifdef CONFIG_CAN_TX_MANAGER
 #include <drivers/can_tx_manager.h>
@@ -16,6 +17,8 @@
 #define CHASSIS_LB_NODE DT_NODELABEL(chassis_lb)
 #define CHASSIS_RF_NODE DT_NODELABEL(chassis_rf)
 #define CHASSIS_RB_NODE DT_NODELABEL(chassis_rb)
+
+// #define DIAL_MOTOR_NODE DT_NODELABEL(lk_motor1)
 
 #ifdef CONFIG_CAN_RX_MANAGER
 #define RX_MANAGER_NODE DT_NODELABEL(can_rx_mgr1)
@@ -35,6 +38,8 @@ extern "C"
 {
 #endif
     extern Motor_RM_t wheel_motor[WHEEL_CNT];
+    // extern KT_motor_t dail_motor;
+    // extern dail_pid_info_t dail_pid;
 
     int Motor_Init(void);
     void Motor_Heartbeat(void);
