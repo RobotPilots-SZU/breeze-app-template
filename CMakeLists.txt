@@ -29,7 +29,7 @@ target_sources(app PRIVATE
     src/DeviceLayer/device_motor.c
     src/DeviceLayer/RM_motor.c
     src/DeviceLayer/DM_Motor.c
-    # src/DeviceLayer/rc_sensor.c
+    src/DeviceLayer/rc_sensor.c
     src/DeviceLayer/imu_wrapper.cpp
     src/DeviceLayer/iwdg.c
     src/DeviceLayer/rtt.c
