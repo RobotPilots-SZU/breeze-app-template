@@ -119,6 +119,12 @@ static void Torque_to_Raw_Current(Motor_RM_t *motor)
 			/*2006转矩电流转化为电流数值*/
 			motor->tx_info->torque_current_raw = (int16_t)((motor->tx_info->torque_current));
 			break;
+			case _2006_Reduction:
+			motor->tx_info->torque_current = motor->tx_info->torque / _2006_TORQUE_CONSTANT;
+			motor->tx_info->torque_current = constrain(motor->tx_info->torque_current, -10000, 10000); // 最大电流限幅
+			/*2006转矩电流转化为电流数值*/
+			motor->tx_info->torque_current_raw = (int16_t)((motor->tx_info->torque_current));
+			break;
 			case _6020_Single:
 			motor->tx_info->torque_current = motor->tx_info->torque / _6020_TORQUE_CONSTANT;
 			motor->tx_info->torque_current = constrain(motor->tx_info->torque_current, -_6020_MAX_CURRENT, _6020_MAX_CURRENT);//最大电流限幅

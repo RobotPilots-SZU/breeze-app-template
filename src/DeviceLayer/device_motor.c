@@ -2,7 +2,7 @@
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(motor, LOG_LEVEL_INF);
 
-pid_ctrl_t fric_speed_pid[FRIC_CNT] = {
+pid_ctrl_t rm_speed_pid[RM_CNT] = {
     [FRIC_L] = {
         .kp = 0,
         .ki = 0,
@@ -17,46 +17,84 @@ pid_ctrl_t fric_speed_pid[FRIC_CNT] = {
         .kd = 0,
         .integral_max = 7000.0f,
         .out_max = 10000.0f,
-
+    },
+    [LIFT] = {
+        .kp = 8,
+        .ki = 0,
+        .kd = 0,
+        .integral_max = 0.0f,
+        .out_max = 300.0f,
     },
 
 };
-pid_ctrl_t fric_angle_inn_pid[FRIC_CNT];
-pid_ctrl_t fric_angle_out_pid[FRIC_CNT];
-Motor_RM_Rx_Info_t fric_rx_info[FRIC_CNT];
-Motor_RM_Tx_Info_t fric_tx_info[FRIC_CNT];
-Motor_RM_State_t fric_state[FRIC_CNT];
-Motor_RM_Ctrl_Info_t fric_ctrl_info[FRIC_CNT] = {
+pid_ctrl_t rm_angle_inn_pid[RM_CNT] = {
+    [LIFT] = {
+        .kp = 40.0f,
+        .ki = 0,
+        .kd = 0,
+        .integral_max = 0.0f,
+        .out_max = 1000.0f,
+    },
+};
+
+pid_ctrl_t rm_angle_out_pid[RM_CNT] = {
+    [LIFT] = {
+        .kp = 8.0f,
+        .ki = 0,
+        .kd = 0,
+        .integral_max = 0.0f,
+        .out_max = 1000.0f,
+    },
+};
+
+Motor_RM_Rx_Info_t rm_rx_info[RM_CNT];
+Motor_RM_Tx_Info_t rm_tx_info[RM_CNT];
+Motor_RM_State_t rm_state[RM_CNT];
+Motor_RM_Ctrl_Info_t rm_ctrl_info[RM_CNT] = {
     [FRIC_L] = {
-        .angle_ctrl_inner = &fric_angle_inn_pid[FRIC_L],
-        .angle_ctrl_outer = &fric_angle_out_pid[FRIC_L],
-        .speed_ctrl = &fric_speed_pid[FRIC_L],
+        .angle_ctrl_inner = &rm_angle_inn_pid[FRIC_L],
+        .angle_ctrl_outer = &rm_angle_out_pid[FRIC_L],
+        .speed_ctrl = &rm_speed_pid[FRIC_L],
     },
     [FRIC_R] = {
-        .angle_ctrl_inner = &fric_angle_inn_pid[FRIC_R],
-        .angle_ctrl_outer = &fric_angle_out_pid[FRIC_R],
-        .speed_ctrl = &fric_speed_pid[FRIC_R],
+        .angle_ctrl_inner = &rm_angle_inn_pid[FRIC_R],
+        .angle_ctrl_outer = &rm_angle_out_pid[FRIC_R],
+        .speed_ctrl = &rm_speed_pid[FRIC_R],
+    },
+    [LIFT] = {
+        .angle_ctrl_inner = &rm_angle_inn_pid[LIFT],
+        .angle_ctrl_outer = &rm_angle_out_pid[LIFT],
+        .speed_ctrl = &rm_speed_pid[LIFT],
     },
 };
 
-Motor_RM_t fric_motor[FRIC_CNT] = {
+Motor_RM_t rm_motor[RM_CNT] = {
     [FRIC_L] = {
-        .rx_info = &fric_rx_info[FRIC_L],
-        .tx_info = &fric_tx_info[FRIC_L],
-        .state = &fric_state[FRIC_L],
-        .ctrl = &fric_ctrl_info[FRIC_L],
+        .rx_info = &rm_rx_info[FRIC_L],
+        .tx_info = &rm_tx_info[FRIC_L],
+        .state = &rm_state[FRIC_L],
+        .ctrl = &rm_ctrl_info[FRIC_L],
         .motor = DEVICE_DT_GET(FRIC_L_NODE),
         .single_init = RM_Motor_Init,
-        .type = _6020_Single,
+        .type = _3508_Single,
     },
     [FRIC_R] = {
-        .rx_info = &fric_rx_info[FRIC_R],
-        .tx_info = &fric_tx_info[FRIC_R],
-        .state = &fric_state[FRIC_R],
-        .ctrl = &fric_ctrl_info[FRIC_R],
+        .rx_info = &rm_rx_info[FRIC_R],
+        .tx_info = &rm_tx_info[FRIC_R],
+        .state = &rm_state[FRIC_R],
+        .ctrl = &rm_ctrl_info[FRIC_R],
         .motor = DEVICE_DT_GET(FRIC_R_NODE),
         .single_init = RM_Motor_Init,
-        .type = _6020_Single,
+        .type = _3508_Single,
+    },
+    [LIFT] = {
+        .rx_info = &rm_rx_info[LIFT],
+        .tx_info = &rm_tx_info[LIFT],
+        .state = &rm_state[LIFT],
+        .ctrl = &rm_ctrl_info[LIFT],
+        .motor = DEVICE_DT_GET(LIFT_NODE),
+        .single_init = RM_Motor_Init,
+        .type = _2006_Reduction,
     },
 };
 
@@ -105,19 +143,19 @@ int Motor_Init()
     const struct device *rx_mgr2 = DEVICE_DT_GET(RX_MANAGER2_NODE);
 #endif
 
-    for (int i = 0; i < FRIC_CNT; i++)
+    for (int i = 0; i < RM_CNT; i++)
     {
-        if (!fric_motor[i].motor)
+        if (!rm_motor[i].motor)
         {
             LOG_ERR("FRIC Motor %d not found!", i);
             return -ENODEV;
         }
-        if (!device_is_ready(fric_motor[i].motor))
+        if (!device_is_ready(rm_motor[i].motor))
         {
             LOG_ERR("FRIC Motor %d is not ready!", i);
             return -ENODEV;
         }
-        fric_motor[i].single_init(&fric_motor[i]);
+        rm_motor[i].single_init(&rm_motor[i]);
     }
 
     for (int i = 0; i < GIMBAL_CNT; i++)
@@ -160,9 +198,9 @@ int Motor_Init()
 
 
 
-    for (int i = 0; i < FRIC_CNT; i++)
+    for (int i = 0; i < RM_CNT; i++)
     {
-        if (register_motor(fric_motor[i].motor) < 0) // 这是通用的多电机注册函数
+        if (register_motor(rm_motor[i].motor) < 0) // 这是通用的多电机注册函数
         {
             LOG_ERR("Failed to register motor %d", i);
             return -ENODEV;
@@ -183,9 +221,9 @@ int Motor_Init()
     // }
     
 
-    for (int i = 0; i < FRIC_CNT; i++)
+    for (int i = 0; i < RM_CNT; i++)
     {
-        fric_motor[i].single_sleep(&fric_motor[i]); // 内部使用通用的多电机扭矩控制函数
+        rm_motor[i].single_sleep(&rm_motor[i]); // 内部使用通用的多电机扭矩控制函数
     }
 
     for (int i = 0; i < GIMBAL_CNT; i++)
@@ -203,9 +241,9 @@ int Motor_Init()
 
 void Motor_Heartbeat()
 {
-    for (int i = 0; i < FRIC_CNT; i++)
+    for (int i = 0; i < RM_CNT; i++)
     {
-        fric_motor[i].single_heart_beat(&fric_motor[i]);
+        rm_motor[i].single_heart_beat(&rm_motor[i]);
     }
 
     for (int i = 0; i < GIMBAL_CNT; i++)

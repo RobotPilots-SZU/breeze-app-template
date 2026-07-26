@@ -71,7 +71,23 @@ interrupts = <35 0>;
         motor-transmission-ratio = <1>;
     };
 
-    gimbal_YAW:motor3{
+    lift:motor3{
+        compatible = "rp,dji-can-motor";
+        status = "okay";
+        can-bus = <&can1>;
+        rx-manager = <&can_rx_mgr1>;
+        tx-manager = <&can_tx_mgr1>;
+        tx-id = <0x200>;
+        rx-id = <0x204>;
+        motor-type = "M2006";
+        label = "lift";
+        control-mode = "torque";
+        Tx-feq = <1000>;
+        motor-encoder = <8192>;
+        motor-transmission-ratio = <36>;
+    };
+
+    gimbal_YAW:motor4{
         compatible = "rp,dm-can-motor";
         status = "okay";
         can-bus = <&can2>;
@@ -91,7 +107,7 @@ interrupts = <35 0>;
         mit-params-limit = <500000 0 5000 0>;
     };
         
-    gimbal_PITCH:motor4{
+    gimbal_PITCH:motor5{
         compatible = "rp,dm-can-motor";
         status = "okay";
         can-bus = <&can1>;
@@ -111,7 +127,7 @@ interrupts = <35 0>;
         mit-params-limit = <500000 0 5000 0>;
     };
 
-    dial_motor:lk_motor1{
+    dial_motor:lk_motor6{
         compatible = "rp,lk-can-motor";
         status = "okay";
         can-bus = <&can1>;
