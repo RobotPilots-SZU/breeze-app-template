@@ -144,7 +144,7 @@ Motor_RM_t wheel_motor[WHEEL_CNT] = {
         .tx_info = &wheel_tx_info[WHEEL_LF],
         .state   = &wheel_state[WHEEL_LF],
         .ctrl = &wheel_ctrl_info[WHEEL_LF],
-        .motor = DEVICE_DT_GET(CHASSIS_LF_NODE),
+        .motor = NULL,
         .single_init = RM_Motor_Init,
     },
     [WHEEL_LB] = {
@@ -152,7 +152,7 @@ Motor_RM_t wheel_motor[WHEEL_CNT] = {
         .tx_info = &wheel_tx_info[WHEEL_LB],
         .state   = &wheel_state[WHEEL_LB],
         .ctrl = &wheel_ctrl_info[WHEEL_LB],
-        .motor = DEVICE_DT_GET(CHASSIS_LB_NODE),
+        .motor = NULL,
         .single_init = RM_Motor_Init,
     },
     [WHEEL_RF] = {
@@ -160,7 +160,7 @@ Motor_RM_t wheel_motor[WHEEL_CNT] = {
         .tx_info = &wheel_tx_info[WHEEL_RF],
         .state   = &wheel_state[WHEEL_RF],
         .ctrl = &wheel_ctrl_info[WHEEL_RF],
-        .motor = DEVICE_DT_GET(CHASSIS_RF_NODE),
+        .motor = NULL,
         .single_init = RM_Motor_Init,
     },
     [WHEEL_RB] = {
@@ -168,7 +168,7 @@ Motor_RM_t wheel_motor[WHEEL_CNT] = {
         .tx_info = &wheel_tx_info[WHEEL_RB],
         .state   = &wheel_state[WHEEL_RB],
         .ctrl = &wheel_ctrl_info[WHEEL_RB],
-        .motor = DEVICE_DT_GET(CHASSIS_RB_NODE),
+        .motor = NULL,
         .single_init = RM_Motor_Init,
     },
 };
@@ -226,7 +226,7 @@ Motor_DM_t gimbal_motor[GIMBAL_CNT] =
                 .tx_info = &Yaw_Tx_Info,
                 .state = &Yaw_State,
                 .ctrl = &gimbal_ctrl_info[YAW],
-                .motor = DEVICE_DT_GET(GIMBAL_YAW_NODE),
+                .motor = NULL,
                 .single_init = &DM_Single_Motor_Init,
                 .type = dm_4310,
             },
