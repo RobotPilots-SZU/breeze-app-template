@@ -52,6 +52,7 @@ int Device_Init(void)
         return ret;
     }
 
+    Module_Init();
     vofa_rtt_init();
     return 0;
 }
