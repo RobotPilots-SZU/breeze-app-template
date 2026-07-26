@@ -12,14 +12,6 @@ interrupts = <35 0>;
 };
 
 / {
-    remote: remote0 {
-        status = "okay";
-        compatible = "rp,remote";
-        uart = <&usart3>;
-    };
-    aliases {
-        remote0 = &remote;
-    };
 
     can_rx_mgr1: can_rx_mgr1 {
         compatible = "rp,can-rx-manager";
@@ -98,11 +90,7 @@ interrupts = <35 0>;
         pos-max = <3141>;
         mit-params-limit = <500000 0 5000 0>;
     };
-
-        Tx-feq = <1000>;
-        motor-encoder = <65535>;
-        motor-transmission-ratio = <9>;
-        vel-max = <45000>;         
+        
     gimbal_PITCH:motor4{
         compatible = "rp,dm-can-motor";
         status = "okay";
@@ -114,6 +102,10 @@ interrupts = <35 0>;
         motor-type = "DM43";
         label = "gimbal_pitch";
         control-mode = "MIT"; // 这里的整数都要除以1000才是实际的上限，必须与上位机的值对应
+        Tx-feq = <1000>;
+        motor-encoder = <65535>;
+        motor-transmission-ratio = <9>;
+        vel-max = <45000>;          // 这里的整数都要除以1000才是实际的上限，必须与上位机的值对应
         tq-max = <54000>;
         pos-max = <3141>;
         mit-params-limit = <500000 0 5000 0>;
@@ -134,7 +126,7 @@ interrupts = <35 0>;
         motor-encoder = <65532>;
         motor-transmission-ratio = <1>;     //减速比在拨盘处已经被包含，拨盘电机不需要再设置减速比
     };
-    
+
     aliases {
         watchdog0 = &iwdg;  /* 将 watchdog0 指向 IWDG 硬件 */
     };
