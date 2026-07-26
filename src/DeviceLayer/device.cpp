@@ -1,5 +1,4 @@
 #include "device.hpp"
-// #include "board_protocol.h"
 #include <zephyr/logging/log.h>
 
 LOG_MODULE_REGISTER(device, LOG_LEVEL_INF);
@@ -56,12 +55,12 @@ int Device_Init(void)
         LOG_ERR("Imu_Init failed with error code: %d", ret);
         return ret;
     }
-    // ret = board.init(&board);
-    // if (ret != 0)
-    // {
-    //     LOG_ERR("Board_Init failed with error code: %d", ret);
-    //     return ret;
-    // }
+    ret = Board_Init();
+    if (ret != 0)
+    {
+        LOG_ERR("Board_Init failed with error code: %d", ret);
+        return ret;
+    }
 
     vofa_rtt_init();
     return 0;

@@ -32,6 +32,7 @@ target_sources(app PRIVATE
     src/DeviceLayer/imu_wrapper.cpp
     src/DeviceLayer/iwdg.c
     src/DeviceLayer/rtt.c
+    src/ProtocolLayer/board_protocol.c
 )
 # 添加头文件路径
 target_include_directories(app PRIVATE

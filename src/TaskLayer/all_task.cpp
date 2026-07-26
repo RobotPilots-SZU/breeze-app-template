@@ -2,7 +2,7 @@
 #include <zephyr/logging/log.h>
 #include "conf_task.hpp"
 #include "device.hpp"				// 设备
-// #include "board_protocol.h"
+#include "board_protocol.h"
 
 LOG_MODULE_REGISTER(all_task, LOG_LEVEL_INF);
 
@@ -11,6 +11,7 @@ extern "C" void StartSystemUpdateTask(void *arg1, void *arg2, void *arg3)
     LOG_INF("System Task started");
     while (true)
     {
+        Send_To_Down_Board();
         k_sleep(K_MSEC(1));
     }
 }
@@ -31,6 +32,7 @@ extern "C" void StartHeartbeatTask(void *arg1, void *arg2, void *arg3)
     while (true)
     {
         Motor_Heartbeat();
+        C_Board_Communicate_HeartBeat();
         
         /* 喂狗 */
         IWDG_Feed(iwdg_dev, IWDG_Channel_ID);

@@ -4,6 +4,7 @@
 #include "imu_ekf.hpp"
 #include "rtt.h"
 #include "iwdg.h"
+#include "board_protocol.h"
 
 int Device_Init(void);
 
