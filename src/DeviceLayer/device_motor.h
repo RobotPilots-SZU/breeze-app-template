@@ -19,6 +19,8 @@
 #define CHASSIS_RB_NODE DT_NODELABEL(chassis_rb)
 #define GIMBAL_YAW_NODE DT_NODELABEL(gimbal_yaw)
 
+// #define DIAL_MOTOR_NODE DT_NODELABEL(lk_motor1)
+
 #ifdef CONFIG_CAN_RX_MANAGER
 #define RX_MANAGER_NODE DT_NODELABEL(can_rx_mgr1)
 #endif

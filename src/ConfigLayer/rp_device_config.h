@@ -19,5 +19,15 @@ typedef enum {
 	
 } dev_work_state_t;
 
+/**
+ * @brief 未初始化：DEV_RESET_NO 初始化完成:DEV_RESET_OK
+ *
+ */
+typedef enum DEV_RESET_STATE
+{
+	DEV_RESET_NO,
+	DEV_RESET_ING,
+	DEV_RESET_OK,
+} Dev_Reset_State_e;
 
 #endif
