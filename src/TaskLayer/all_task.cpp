@@ -2,7 +2,6 @@
 #include <zephyr/logging/log.h>
 #include "conf_task.hpp"
 #include "device.hpp"				// 设备
-#include "board_protocol.h"
 #include "module.h"
 
 LOG_MODULE_REGISTER(all_task, LOG_LEVEL_INF);
@@ -24,6 +23,34 @@ extern "C" void StartUpdateTask(void *arg1, void *arg2, void *arg3)
     {
         breeze::Imu_Process();
         Module_Work();
+        /*板通正常并且遥控器开控*/
+        if (Board_Rx_Info.state_pkt.car_state != SLEEP_MODE && Board_HeartBeat.status == DEV_ONLINE)
+        {
+            for (int i = 0; i < RM_CNT;i++)
+            {
+                rm_motor[i].single_set_torque(&rm_motor[i]);
+            }
+            for (int i = 0; i < GIMBAL_CNT; i++)
+            {
+                gimbal_motor[i].single_set_torque(&gimbal_motor[i]);
+            }
+            //shoot.send(&shoot);
+        }
+        else
+        {
+            for (int i = 0; i < RM_CNT; i++)
+            {
+                rm_motor[i].single_sleep(&rm_motor[i]);
+                rm_motor[i].single_set_torque(&rm_motor[i]);
+            }
+            for (int i = 0; i < GIMBAL_CNT; i++)
+            {
+                gimbal_motor[i].single_sleep(&gimbal_motor[i]);
+                gimbal_motor[i].single_set_torque(&gimbal_motor[i]);
+            }
+            // shoot.dail_info.dail_motor->W_iqControl(shoot.dail_info.dail_motor, 0);
+            // shoot.dail_info.dail_motor->tx_W_cmd(shoot.dail_info.dail_motor, TORQUE_CLOSE_LOOP_ID);
+        }
         k_sleep(K_MSEC(1));
     }
 }

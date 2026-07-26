@@ -4,7 +4,6 @@
 #include "rtt.h"
 #include "iwdg.h"
 #include "board_protocol.h"
-#include "module.h"
 
 int Device_Init(void);
 

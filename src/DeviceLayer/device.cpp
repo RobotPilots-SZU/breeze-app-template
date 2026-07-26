@@ -1,6 +1,6 @@
-#include "device.hpp"
 #include <zephyr/logging/log.h>
-
+#include "device.hpp"
+#include "module.h"
 LOG_MODULE_REGISTER(device, LOG_LEVEL_INF);
 
 //------------------------------获取设备节点---------------------------------------
