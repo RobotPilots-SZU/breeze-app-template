@@ -3,6 +3,7 @@
 #include "conf_task.hpp"
 #include "device.hpp"				// 设备
 #include "board_protocol.h"
+#include "module.h"
 
 LOG_MODULE_REGISTER(all_task, LOG_LEVEL_INF);
 
@@ -22,6 +23,7 @@ extern "C" void StartUpdateTask(void *arg1, void *arg2, void *arg3)
     while (true)
     {
         breeze::Imu_Process();
+        Module_Work();
         k_sleep(K_MSEC(1));
     }
 }

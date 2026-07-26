@@ -34,6 +34,7 @@ target_sources(app PRIVATE
     src/DeviceLayer/rtt.c
     src/ProtocolLayer/board_protocol.c
     src/ModuleLayer/gimbal.c
+    src/ModuleLayer/module.c
     src/ModuleLayer/car.c
 )
 # 添加头文件路径
