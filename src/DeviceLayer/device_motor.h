@@ -13,39 +13,37 @@
 
 #define MOTOR_3508_CURRENT_MAX 10000
 
-#define CHASSIS_LF_NODE DT_NODELABEL(chassis_lf)
-#define CHASSIS_LB_NODE DT_NODELABEL(chassis_lb)
-#define CHASSIS_RF_NODE DT_NODELABEL(chassis_rf)
-#define CHASSIS_RB_NODE DT_NODELABEL(chassis_rb)
+#define FRIC_R_NODE DT_NODELABEL(fric_r)
+#define FRIC_L_NODE DT_NODELABEL(fric_l)
 #define GIMBAL_YAW_NODE DT_NODELABEL(gimbal_yaw)
+#define GIMBAL_PITCH_NODE DT_NODELABEL(gimbal_pitch)
 
 // #define DIAL_MOTOR_NODE DT_NODELABEL(lk_motor1)
 
 #ifdef CONFIG_CAN_RX_MANAGER
-#define RX_MANAGER_NODE DT_NODELABEL(can_rx_mgr1)
+#define RX_MANAGER1_NODE DT_NODELABEL(can_rx_mgr1)
+#define RX_MANAGER2_NODE DT_NODELABEL(can_rx_mgr2)
 #endif
 
 typedef enum
 {
-    WHEEL_LF = 0,
-    WHEEL_LB,
-    WHEEL_RF,
-    WHEEL_RB,
-    WHEEL_CNT,
-} Wheel_List_e;
+    FRIC_L = 0,
+    FRIC_R,
+    FRIC_CNT,
+} Fric_List_e;
 
 typedef enum
 {
     YAW = 0,
+    PITCH,
     GIMBAL_CNT,
-}
-Gimbal_List_e;
+}Gimbal_List_e;
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
-    extern Motor_RM_t wheel_motor[WHEEL_CNT];
+    extern Motor_RM_t fric_motor[FRIC_CNT];
     extern Motor_DM_t gimbal_motor[GIMBAL_CNT];
 
     int Motor_Init(void);

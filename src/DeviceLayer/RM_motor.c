@@ -84,7 +84,6 @@ void RM_Motor_Init(Motor_RM_t *motor)
 	motor->single_sleep = Single_Motor_Sleep;
 	motor->rx = rm_motor_update;
 	motor->single_heart_beat = rm_motor_heart_beat;
-	motor->type = _3508_Reduction; // д╛хоюЮпм
 }
 
 
