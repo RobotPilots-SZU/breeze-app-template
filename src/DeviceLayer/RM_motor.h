@@ -31,11 +31,12 @@
 /*电机模式*/
 typedef enum Motor_RM_Type
 {
-	_3508_Single,//3508不加减速箱
-	_3508_Reduction,//3508加减速箱
-	_6020_Single,//单6020电机
-	_2006_Single,//单2006电机
-}Motor_RM_Type_e;
+	_3508_Single,	 // 3508不加减速箱
+	_3508_Reduction, // 3508加减速箱
+	_6020_Single,	 // 单6020电机
+	_2006_Single,	 // 单2006电机
+	_2006_Reduction  // 2006减速箱
+} Motor_RM_Type_e;
 
 typedef struct Motor_RM_Rx_Info_struct_t
 {

@@ -17,6 +17,7 @@
 #define FRIC_L_NODE DT_NODELABEL(fric_l)
 #define GIMBAL_YAW_NODE DT_NODELABEL(gimbal_yaw)
 #define GIMBAL_PITCH_NODE DT_NODELABEL(gimbal_pitch)
+#define LIFT_NODE DT_NODELABEL(lift)
 
 // #define DIAL_MOTOR_NODE DT_NODELABEL(lk_motor1)
 
@@ -29,7 +30,8 @@ typedef enum
 {
     FRIC_L = 0,
     FRIC_R,
-    FRIC_CNT,
+    LIFT,
+    RM_CNT,
 } Fric_List_e;
 
 typedef enum
@@ -43,7 +45,7 @@ typedef enum
 extern "C"
 {
 #endif
-    extern Motor_RM_t fric_motor[FRIC_CNT];
+    extern Motor_RM_t rm_motor[RM_CNT];
     extern Motor_DM_t gimbal_motor[GIMBAL_CNT];
 
     int Motor_Init(void);
