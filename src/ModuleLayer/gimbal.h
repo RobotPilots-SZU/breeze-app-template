@@ -10,9 +10,8 @@
 
 #include "rp_config.h"       
 #include "rp_device_config.h" 
-#include "device_motor.h"    
-#include "rp_math.h"
 #include "pid.h"
+#include "device_motor.h"
 #include <stdbool.h>
 
 

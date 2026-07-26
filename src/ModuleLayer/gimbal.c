@@ -16,10 +16,9 @@
 #include "gimbal.h"
 #include "board_protocol.h"
 #include "imu_wrapper.h"
-#include "device_motor.h"
 #include "rp_math.h"
 #include <math.h>
-// #include "car.h"                  /* 未移植 */
+#include "car.h"
 
 #define M_PI 3.14159265358979323846f
 //#define DEBUG
@@ -165,24 +164,24 @@ static void Gimbal_info_update(gimbal_t *gimbal)
 	// gimbal->base_info.vision_pitch_angle = vision.VtoE->pitch;   /* 未移植(vision) */
 	// gimbal->base_info.vision_yaw_angle = vision.VtoE->yaw;       /* 未移植(vision) */
 	
-    // static Car_Ctrl_Mode_e last_mode = SLEEP_MODE;                /* 未移植(car.h) */
+    static Car_Ctrl_Mode_e last_mode = SLEEP_MODE;
 
-    // /*整车控制模式切换*/                                             /* 未移植(car.h) */
-    // if(car.car_ctrl_mode == SLEEP_MODE)                            /* 未移植(car.h) */
-    // {
-    //     gimbal->init_info.init_flag = 0;
-    // 	gimbal->init_info.init_time = 0;
-    // 	gimbal->Lift.is_find_limit = false;
-    // 	gimbal->Lift.Lift_timeout = false;
-    // 	gimbal->Lift.Limit_find_time = 0;
-    // 	gimbal->Lift.Find_current = find_target_test;
-    // 	gimbal->Lift.lift_state = LIFT_UTD;
-    //     gimbal->gimbal_reset_state = DEV_RESET_NO;
+    /*整车控制模式切换*/
+    if(car.car_ctrl_mode == SLEEP_MODE)
+    {
+        gimbal->init_info.init_flag = 0;
+    	gimbal->init_info.init_time = 0;
+    	gimbal->Lift.is_find_limit = false;
+    	gimbal->Lift.Lift_timeout = false;
+    	gimbal->Lift.Limit_find_time = 0;
+    	gimbal->Lift.Find_current = find_target_test;
+    	gimbal->Lift.lift_state = LIFT_UTD;
+        gimbal->gimbal_reset_state = DEV_RESET_NO;
 		
-    // 	gimbal->Lift.Lift_angle_Min = 0.0f;
-    //     gimbal->Lift.Lift_angle_Max = 0.0f;
+    	gimbal->Lift.Lift_angle_Min = 0.0f;
+        gimbal->Lift.Lift_angle_Max = 0.0f;
 						
-    // }
+    }
 	if(gimbal->lift_motor->state->status == DEV_ONLINE && last_motor_mode == DEV_OFFLINE)
 	{
 		gimbal->Lift.Lift_angle_Min = 0.0f;
@@ -190,60 +189,61 @@ static void Gimbal_info_update(gimbal_t *gimbal)
 	}
 	
 	
-	// if(car.car_ctrl_mode == SLEEP_MODE)                           /* 未移植(car.h) */
-    //     gimbal->gimbal_mode = G_SLEEP;
+	if(car.car_ctrl_mode == SLEEP_MODE)
+        gimbal->gimbal_mode = G_SLEEP;
 
-// #ifdef DEBUG
-//     #else
-//     else if(gimbal->init_info.init_flag == 0)
-//         gimbal->gimbal_mode = G_INIT;
-//     else if(gimbal->init_info.init_flag == 1)
-//         {
-//             if(Board_Rx_Info.state_pkt.gimbal_mode == 0)
-//                 gimbal->gimbal_mode = G_MEC;
-//             else if(Board_Rx_Info.state_pkt.gimbal_mode == 1)
-//                 gimbal->gimbal_mode = G_GYRO;
-//         }
+#ifdef DEBUG
+    #else
+    else if(gimbal->init_info.init_flag == 0)
+        gimbal->gimbal_mode = G_INIT;
+    else if(gimbal->init_info.init_flag == 1)
+        {
+            if(Board_Rx_Info.state_pkt.gimbal_mode == 0)
+                gimbal->gimbal_mode = G_MEC;
+            else if(Board_Rx_Info.state_pkt.gimbal_mode == 1)
+                gimbal->gimbal_mode = G_GYRO;
+        }
     
-//     #endif
+    #endif
 
-//     #ifdef DEBUG
-//     gimbal->ctrl_type = SELF_DEBUG;
-//     #else
-//     /*云台控制数据来源 自定义用于调试pid 板间 or 视觉*/
-//     if (Board_Rx_Info.state_pkt.vision_mode != 0 &&vision.VtoE->is_find_target == 1 &&  gimbal->gimbal_mode == G_GYRO)  /* 未移植(vision) */
-//         gimbal->ctrl_type = VISION_CTRL;
-//     else
-//         gimbal->ctrl_type = BOARD_CTRL;
-//     #endif
+    //TO DO vision未移植
+    // #ifdef DEBUG
+    // gimbal->ctrl_type = SELF_DEBUG;
+    // #else
+    // /*云台控制数据来源 自定义用于调试pid 板间 or 视觉*/
+    // if (Board_Rx_Info.state_pkt.vision_mode != 0 &&vision.VtoE->is_find_target == 1 &&  gimbal->gimbal_mode == G_GYRO)  /* 未移植(vision) */
+    //     gimbal->ctrl_type = VISION_CTRL;
+    // else
+    //     gimbal->ctrl_type = BOARD_CTRL;
+    // #endif
 
 
-//         //升降指令
-//         if (Board_Rx_Info.shoot_pkt.is_hole == 1 && gimbal->Lift.lift_state == LIFT_UP)
-//         {
-//             gimbal->Lift.lift_state = LIFT_UTD;
-// 			if(gimbal->Lift.is_use_angle == 0)
-// 			{
-// 				gimbal->Lift.Find_current = find_target_test_2;
-// 				gimbal->Lift.Lift_timeout = false;
-// 				gimbal->Lift.Limit_find_time = 0;
-// 			}
-//         }
+        //升降指令
+        if (Board_Rx_Info.shoot_pkt.is_hole == 1 && gimbal->Lift.lift_state == LIFT_UP)
+        {
+            gimbal->Lift.lift_state = LIFT_UTD;
+			if(gimbal->Lift.is_use_angle == 0)
+			{
+				gimbal->Lift.Find_current = find_target_test_2;
+				gimbal->Lift.Lift_timeout = false;
+				gimbal->Lift.Limit_find_time = 0;
+			}
+        }
         
-//         else if (Board_Rx_Info.shoot_pkt.is_hole == 0 && gimbal->Lift.lift_state == LIFT_DOWN)
-// 		{
-//             gimbal->Lift.lift_state = LIFT_DTU;
-// 			if(gimbal->Lift.is_use_angle == 0)
-// 			{
-// 				gimbal->Lift.Find_current = find_target_test_2;
-// 				gimbal->Lift.Lift_timeout = false;
-// 				gimbal->Lift.Limit_find_time = 0;
-// 			}
-// 		}
+        else if (Board_Rx_Info.shoot_pkt.is_hole == 0 && gimbal->Lift.lift_state == LIFT_DOWN)
+		{
+            gimbal->Lift.lift_state = LIFT_DTU;
+			if(gimbal->Lift.is_use_angle == 0)
+			{
+				gimbal->Lift.Find_current = find_target_test_2;
+				gimbal->Lift.Lift_timeout = false;
+				gimbal->Lift.Limit_find_time = 0;
+			}
+		}
 
 
-//         gimbal->Lift.Last_Lift_state = gimbal->Lift.lift_state;
-//         last_mode = car.car_ctrl_mode;                          /* 未移植(car.h) */
+        gimbal->Lift.Last_Lift_state = gimbal->Lift.lift_state;
+        last_mode = car.car_ctrl_mode;
 		last_motor_mode = gimbal->lift_motor->state->status;
 		
 
