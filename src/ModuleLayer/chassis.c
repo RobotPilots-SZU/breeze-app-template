@@ -7,10 +7,11 @@
 #include "rc_sensor.h"
 #include "imu_wrapper.h"
 #include "rp_config.h"
-// #include "board_protocol.h"
+#include "board_protocol.h"
+#include "gimbal.h"
 // #include "judge.h"
 // #include "cap.h"
-// #include "gimbal.h"
+
 
 static void Chassis_Init(Chassis_t* chassis);
 static void Chassis_Status_Update(Chassis_t* chassis);
@@ -94,14 +95,14 @@ static void Chassis_Status_Update(Chassis_t* chassis)
 			{
 				chassis->mode = C_BOSS;
 			}
-			// else if(infantry.flag.hole_flag == false && board.rx_meg->state_meg.is_down == 2)
-			// {
-			// 	chassis->mode = C_SLAVE;
-			// }
-			// else if(infantry.flag.hole_flag == false && board.rx_meg->state_meg.is_down != 2)
-			// {
-			// 	chassis->mode = C_BOSS;
-			// }
+			else if(infantry.flag.hole_flag == false && board.rx_meg->state_meg.is_down == 2)
+			{
+				chassis->mode = C_SLAVE;
+			}
+			else if(infantry.flag.hole_flag == false && board.rx_meg->state_meg.is_down != 2)
+			{
+				chassis->mode = C_BOSS;
+			}
 			break;
 			
 		case I_IMU:
@@ -175,11 +176,8 @@ static void __attribute__((unused)) Chassis_Key_Input(Chassis_t *chassis)
 
 static void Chassis_Target_Update(Chassis_t* chassis)
 {
-#ifdef test_cycle
-	//float yaw_angle_err_rad = -gimbal.info.yaw_mec_err_raw;
-#else
-	//float yaw_angle_err_rad = gimbal.info.yaw_mec_err_act;
-#endif
+
+	float yaw_angle_err_rad = gimbal.info.yaw_mec_err_act;
 	float front_speed,left_speed,cycle_speed;
 	static float straight_yaw = 0;
 	
@@ -256,23 +254,23 @@ static void Chassis_Target_Update(Chassis_t* chassis)
 				#endif
 	      	
 		#if GIMBAL_SWITCH == 0
-		// 	if (abs(yaw_angle_err_rad) > PI/2)   //掉头反着开
-        //   {
-        //     front_speed *= -1.f;
-        //     left_speed *= -1.f;
-        //   }
+			if (abs(yaw_angle_err_rad) > PI/2)   //掉头反着开
+          {
+            front_speed *= -1.f;
+            left_speed *= -1.f;
+          }
 		#else
 		#endif		
 		// // front和right值计算
-	    // chassis->target.front_speed = front_speed * cos(yaw_angle_err_rad) - left_speed * sin(yaw_angle_err_rad);
-	    // chassis->target.left_speed = left_speed * cos(yaw_angle_err_rad) + front_speed * sin(yaw_angle_err_rad);
+		  chassis->target.front_speed = front_speed * cosf(gimbal.info.yaw_mec_err_raw) - left_speed * sinf(gimbal.info.yaw_mec_err_raw);
+		  chassis->target.left_speed = left_speed * cosf(gimbal.info.yaw_mec_err_raw) + front_speed * sinf(gimbal.info.yaw_mec_err_raw);
 		}
 		else
 		{
-			// chassis->target.cycle_speed = -1 * 600.f * yaw_angle_err_rad * yaw_angle_err_rad * sgn(yaw_angle_err_rad);
-			// chassis->target.cycle_speed = constrain(chassis->target.cycle_speed, -CYCLE_MAX_SPEED, CYCLE_MAX_SPEED);
-			// chassis->target.front_speed = front_speed * cos(yaw_angle_err_rad) - left_speed * sin(yaw_angle_err_rad);
-			// chassis->target.left_speed = left_speed * cos(yaw_angle_err_rad) + front_speed * sin(yaw_angle_err_rad);
+			chassis->target.cycle_speed = -1 * 600.f * yaw_angle_err_rad * yaw_angle_err_rad * sgn(yaw_angle_err_rad);
+			chassis->target.cycle_speed = constrain(chassis->target.cycle_speed, -CYCLE_MAX_SPEED, CYCLE_MAX_SPEED);
+			chassis->target.front_speed = front_speed * cosf(yaw_angle_err_rad) - left_speed * sinf(yaw_angle_err_rad);
+			chassis->target.left_speed = left_speed * cosf(yaw_angle_err_rad) + front_speed * sinf(yaw_angle_err_rad);
 		}	
 	    
 		
@@ -410,13 +408,13 @@ static void Chassis_Feedforward_Calculate(Chassis_t* chassis)
 {
 	float direct = 1.f;
 	
-	// if(abs(gimbal.info.yaw_mec_err_raw) <= PI/2)
-	// {
-	// 	direct = 1.f;
-	// }
-	// else{
-	//   direct = -1.f;
-	// }
+	if(fabsf(gimbal.info.yaw_mec_err_raw) <= PI/2)
+	{
+		direct = 1.f;
+	}
+	else{
+	  direct = -1.f;
+	}
 		
 	
 	float car_x_f,car_y_f;

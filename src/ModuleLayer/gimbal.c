@@ -5,7 +5,7 @@
 #include "rp_math.h"
 #include "imu_wrapper.h"
 #include "rc_sensor.h"
-
+#include "rp_config.h"
 static void Gimbal_Init(Gimbal_t* gimbal);
 static void Gimbal_Data_Update(Gimbal_t* gimbal);
 static void Gimbal_Status_Update(Gimbal_t* gimbal);
@@ -179,7 +179,7 @@ static void  Gimbal_Slave_Update(Gimbal_t* gimbal)
 {
 	if(gimbal->gimbal_reset_flag == false || gimbal->mode == G_INIT)
 	{
-	  gimbal->target.yaw_mec_tar = YAW_MEC_ZERO_ANGLE;
+	  	gimbal->target.yaw_mec_tar = YAW_MEC_ZERO_ANGLE;
 		gimbal->target.pitch_mec_tar = PITCH_MEC_ZERO_ANGLE;
 	
 	}
