@@ -84,7 +84,6 @@ void RM_Motor_Init(Motor_RM_t *motor)
 	motor->single_sleep = Single_Motor_Sleep;
 	motor->rx = rm_motor_update;
 	motor->single_heart_beat = rm_motor_heart_beat;
-	motor->type = _3508_Reduction; // 默认类型
 }
 
 
@@ -117,6 +116,12 @@ static void Torque_to_Raw_Current(Motor_RM_t *motor)
 			case _2006_Single:
 			motor->tx_info->torque_current = motor->tx_info->torque;
 			motor->tx_info->torque_current = constrain(motor->tx_info->torque_current, -10000, 10000);//最大电流限幅
+			/*2006转矩电流转化为电流数值*/
+			motor->tx_info->torque_current_raw = (int16_t)((motor->tx_info->torque_current));
+			break;
+			case _2006_Reduction:
+			motor->tx_info->torque_current = motor->tx_info->torque / _2006_TORQUE_CONSTANT;
+			motor->tx_info->torque_current = constrain(motor->tx_info->torque_current, -10000, 10000); // 最大电流限幅
 			/*2006转矩电流转化为电流数值*/
 			motor->tx_info->torque_current_raw = (int16_t)((motor->tx_info->torque_current));
 			break;

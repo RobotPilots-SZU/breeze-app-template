@@ -70,6 +70,7 @@ typedef struct
 /*血量信息*/
 typedef struct
 {
+    uint8_t blood_0; // 英雄
     uint8_t blood_1; // 工程
     uint8_t blood_2; // 哨兵
     uint8_t blood_3; // 步兵
