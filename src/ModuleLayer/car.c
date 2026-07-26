@@ -33,7 +33,7 @@ void car_init(car_t *car)
     car->car_ctrl_mode = RC_CTRL_MODE;
 
     // car->vision = &vision;
-    // car->gimbal = &Gimbal;   //等待云台
+    car->gimbal = &Gimbal;   
     // car->shoot = &shoot;
 
     car->shoot_flag.Enable_Shoot_Flag = false;

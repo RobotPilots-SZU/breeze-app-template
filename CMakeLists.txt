@@ -33,6 +33,7 @@ target_sources(app PRIVATE
     src/DeviceLayer/iwdg.c
     src/DeviceLayer/rtt.c
     src/ProtocolLayer/board_protocol.c
+    src/ModuleLayer/gimbal.c
     src/ModuleLayer/module.c
     src/ModuleLayer/car.c
 )

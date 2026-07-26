@@ -7,7 +7,7 @@
 #pragma once
 
 #include "board_protocol.h"
-// #include "gimbal.h"
+#include "gimbal.h"
 // #include "dial.h"
 
 /* 仅保留结构体声明，实际控制逻辑在下主控 */
@@ -55,7 +55,7 @@ typedef struct __attribute__((packed)) car_struct {
     Vision_flag_t vision_flag;
 
     // Vision_t *vision;
-    // gimbal_t *gimbal;    //等待云台
+    gimbal_t *gimbal;    
     // shoot_t *shoot;
 
     uint8_t unlock_car_flag;

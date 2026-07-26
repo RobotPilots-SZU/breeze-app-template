@@ -1,9 +1,10 @@
 #include "module.h"
+#include "gimbal.h"
 
 void Module_Init(void)
 {
     // fric.init(&fric);
-	// Gimbal.init(&Gimbal);
+	Gimbal.init(&Gimbal);
     // shoot.init(&shoot);
     car.init(&car);
 }
@@ -11,7 +12,7 @@ void Module_Init(void)
 void Module_Work(void)
 {
     car.update(&car);
-    // Gimbal.work(&Gimbal);
+    Gimbal.work(&Gimbal);
     // fric.work(&fric);
     // shoot.work(&shoot);
     // Board_Tx_Update(&Board_Tx_Info);     // 在系统task里面实现
