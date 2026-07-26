@@ -16,6 +16,7 @@
 #include "gimbal.h"
 #include "board_protocol.h"
 #include "imu_wrapper.h"
+#include "device_motor.h"
 #include "rp_math.h"
 #include <math.h>
 // #include "car.h"                  /* 未移植 */
@@ -43,9 +44,9 @@ void Gimbal_Work(gimbal_t *gimbal); // 主处理函数实现
 /* Public variables ---------------------------------------------------------*/
 gimbal_t Gimbal =
     {
-        // .pitch_motor = &dm_motor[PITCH],    /* 未移植(motor.h) */
-        // .yaw_motor = &dm_motor[YAW],        /* 未移植(motor.h) */
-        // .lift_motor = &rm_motor[LIFT],      /* 未移植(motor.h) */
+        .pitch_motor = &gimbal_motor[PITCH],
+        .yaw_motor = &gimbal_motor[YAW],
+        .lift_motor = &rm_motor[LIFT],
 
         .init = Gimbal_Init,
         .work = Gimbal_Work,
@@ -110,9 +111,9 @@ void Gimbal_Work(gimbal_t *gimbal)
 
     Gimbal_Pid_cal(gimbal);
 
-    // gimbal->lift_motor->tx_info->torque = gimbal->base_info.output_gimbal_L;  /* 未移植(motor.h) */
-    // gimbal->pitch_motor->tx_info->torque = gimbal->base_info.output_gimbal_p; /* 未移植(motor.h) */
-    // gimbal->yaw_motor->tx_info->torque = gimbal->base_info.output_gimbal_y;  /* 未移植(motor.h) */
+    gimbal->lift_motor->tx_info->torque = gimbal->base_info.output_gimbal_L;
+    gimbal->pitch_motor->tx_info->torque = gimbal->base_info.output_gimbal_p;
+    gimbal->yaw_motor->tx_info->torque = gimbal->base_info.output_gimbal_y;
     
     Gimbal_protect(gimbal);
 }
@@ -124,8 +125,8 @@ int out = 0,current = 0;
 static void Gimbal_info_update(gimbal_t *gimbal)
 {
 	static dev_work_state_t last_motor_mode = DEV_OFFLINE;
-	// out = gimbal->lift_motor->tx_info->torque;                        /* 未移植(motor.h) */
-	// current = gimbal->lift_motor->rx_info->torque_current_raw;        /* 未移植(motor.h) */
+	out = gimbal->lift_motor->tx_info->torque;
+	current = gimbal->lift_motor->rx_info->torque_current_raw;
      //陀螺仪数据 (imu_wrapper返回rad/s, 原始代码使用°/s, 需转换)
     gimbal->base_info.yaw_imu_angle = imu_get_yaw();
     gimbal->base_info.yaw_imu_speed = imu_get_gyro_z() * 57.2958f;     // rad/s -> °/s
@@ -133,32 +134,32 @@ static void Gimbal_info_update(gimbal_t *gimbal)
     gimbal->base_info.pitch_imu_speed = imu_get_gyro_y() * 57.2958f;   // rad/s -> °/s
 
     //电机数据
-    // gimbal->base_info.yaw_motor_angle = gimbal->yaw_motor->rx_info->motor_angle;           /* 未移植(motor.h) */
-    // gimbal->base_info.yaw_mec_360_angle = gimbal->yaw_motor->rx_info->motor_angle / (2 * PI) * 360.f; /* 未移植(motor.h) */
-    // gimbal->base_info.yaw_mec_speed = gimbal->yaw_motor->rx_info->speed;                    /* 未移植(motor.h) */
-    // gimbal->base_info.pitch_motor_angle = gimbal->pitch_motor->rx_info->motor_angle - PITCH_MOTOR_ANGLE_MIDDLE; /* 未移植(motor.h) */
-    // gimbal->base_info.pitch_motor_angle = motor_half_cycle(gimbal->base_info.pitch_motor_angle , 2*PI); /* 未移植(motor.h) */
-    // gimbal->base_info.pitch_mec_360_angle = gimbal->base_info.pitch_motor_angle / (2 * PI) * 360.f; /* 未移植(motor.h) */
-    // gimbal->base_info.pitch_mec_speed = gimbal->pitch_motor->rx_info->speed;                  /* 未移植(motor.h) */
+    gimbal->base_info.yaw_motor_angle = gimbal->yaw_motor->rx_info->motor_angle;
+    gimbal->base_info.yaw_mec_360_angle = gimbal->yaw_motor->rx_info->motor_angle / (2 * PI) * 360.f;
+    gimbal->base_info.yaw_mec_speed = gimbal->yaw_motor->rx_info->speed;
+    gimbal->base_info.pitch_motor_angle = gimbal->pitch_motor->rx_info->motor_angle - PITCH_MOTOR_ANGLE_MIDDLE;
+    gimbal->base_info.pitch_motor_angle = motor_half_cycle(gimbal->base_info.pitch_motor_angle , 2*PI);
+    gimbal->base_info.pitch_mec_360_angle = gimbal->base_info.pitch_motor_angle / (2 * PI) * 360.f;
+    gimbal->base_info.pitch_mec_speed = gimbal->pitch_motor->rx_info->speed;
 	
     gimbal->base_info.yaw_ctrl_imu_target = Board_Rx_Info.gimbal_target_pkt.yaw_imu_tar;
     gimbal->base_info.yaw_ctrl_mec_target = Board_Rx_Info.gimbal_target_pkt.yaw_mec_tar;
     gimbal->base_info.pitch_ctrl_imu_target = Board_Rx_Info.gimbal_target_pkt.pitch_imu_tar;
     gimbal->base_info.pitch_ctrl_mec_target = Board_Rx_Info.gimbal_target_pkt.pitch_mec_tar;
 	
-	// gimbal->base_info.Lift_Motor_speed = gimbal->lift_motor->rx_info->speed;                 /* 未移植(motor.h) */
-	// gimbal->base_info.Lift_Motor_angle = gimbal->lift_motor->rx_info->motor_angle_sum;       /* 未移植(motor.h) */
+	gimbal->base_info.Lift_Motor_speed = gimbal->lift_motor->rx_info->speed;
+	gimbal->base_info.Lift_Motor_angle = gimbal->lift_motor->rx_info->motor_angle_sum;
 	
-	// if(gimbal->lift_motor->state->status == DEV_ONLINE)                                      /* 未移植(motor.h) */
-	// {
-	// 	gimbal->Lift.current_angle = gimbal->base_info.Lift_Motor_angle = gimbal->lift_motor->rx_info->motor_angle_sum - \
-	// 								 gimbal->Lift.Lift_angle_Min;
-	// }
-	// else if(gimbal->lift_motor->state->status == DEV_ONLINE && last_motor_mode == DEV_OFFLINE)  /* 未移植(motor.h) */
-	// {
-	// 	gimbal->Lift.Lift_angle_Min = gimbal->base_info.Lift_Motor_angle - gimbal->Lift.current_angle;
-	// 	gimbal->Lift.Lift_angle_Max = gimbal->Lift.Lift_angle_Min + gimbal->Lift.Lift_distance;
-	// }
+	if(gimbal->lift_motor->state->status == DEV_ONLINE)
+	{
+		gimbal->Lift.current_angle = gimbal->base_info.Lift_Motor_angle = gimbal->lift_motor->rx_info->motor_angle_sum - \
+								 gimbal->Lift.Lift_angle_Min;
+	}
+	else if(gimbal->lift_motor->state->status == DEV_ONLINE && last_motor_mode == DEV_OFFLINE)
+	{
+		gimbal->Lift.Lift_angle_Min = gimbal->base_info.Lift_Motor_angle - gimbal->Lift.current_angle;
+		gimbal->Lift.Lift_angle_Max = gimbal->Lift.Lift_angle_Min + gimbal->Lift.Lift_distance;
+	}
 
 
 	// gimbal->base_info.vision_pitch_angle = vision.VtoE->pitch;   /* 未移植(vision) */
@@ -182,11 +183,11 @@ static void Gimbal_info_update(gimbal_t *gimbal)
     //     gimbal->Lift.Lift_angle_Max = 0.0f;
 						
     // }
-	// if(gimbal->lift_motor->state->status == DEV_ONLINE && last_motor_mode == DEV_OFFLINE)  /* 未移植(motor.h) */
-	// {
-	// 	gimbal->Lift.Lift_angle_Min = 0.0f;
-    //     gimbal->Lift.Lift_angle_Max = 0.0f;
-	// }
+	if(gimbal->lift_motor->state->status == DEV_ONLINE && last_motor_mode == DEV_OFFLINE)
+	{
+		gimbal->Lift.Lift_angle_Min = 0.0f;
+        gimbal->Lift.Lift_angle_Max = 0.0f;
+	}
 	
 	
 	// if(car.car_ctrl_mode == SLEEP_MODE)                           /* 未移植(car.h) */
@@ -243,7 +244,7 @@ static void Gimbal_info_update(gimbal_t *gimbal)
 
 //         gimbal->Lift.Last_Lift_state = gimbal->Lift.lift_state;
 //         last_mode = car.car_ctrl_mode;                          /* 未移植(car.h) */
-// 		last_motor_mode = gimbal->lift_motor->state->status;    /* 未移植(motor.h) */
+		last_motor_mode = gimbal->lift_motor->state->status;
 		
 
 }
@@ -265,7 +266,7 @@ static void Gimbal_state_change(gimbal_t *gimbal)
         }
         break;
     
-    // case VISION_CTRL:                                             /* 未移植(vision) */
+    case VISION_CTRL:                                             /* 未移植(vision) */
 	// 	if(vision.status->rx_state == DEV_ONLINE)                  /* 未移植(vision) */
 	// 	{
 	// 		gimbal->pid_info.pitch_target_raw = gimbal->base_info.vision_pitch_angle;
@@ -277,7 +278,7 @@ static void Gimbal_state_change(gimbal_t *gimbal)
 	// 		gimbal->pid_info.pitch_target_raw = gimbal->base_info.pitch_ctrl_imu_target;
     //         gimbal->pid_info.yaw_target_raw = gimbal->base_info.yaw_ctrl_imu_target;
 	// 	}
-    //     break;
+        break;
 
     //没有设定目标值（自己改）
     case SELF_DEBUG:
@@ -292,42 +293,42 @@ static void Gimbal_state_change(gimbal_t *gimbal)
 /*堵转检测*/
 static void block_check(gimbal_t *gimbal)
 {
-    // if (my_abs(gimbal->lift_motor->rx_info->torque_current_raw) >= gimbal->Lift.Find_current)  /* 未移植(motor.h) */
-	// 		{
-	// 			/*堵转判断*/
-	// 			if(gimbal->Lift.block_time >= gimbal->Lift.block_time_max)
-	// 			{
-	// 				gimbal->Lift.block_time = 0;
+    if (abs(gimbal->lift_motor->rx_info->torque_current_raw) >= gimbal->Lift.Find_current)
+			{
+				/*堵转判断*/
+				if(gimbal->Lift.block_time >= gimbal->Lift.block_time_max)
+				{
+					gimbal->Lift.block_time = 0;
 					
-    //                 if(gimbal->Lift.is_use_angle == 1)
-    //                 {
-    //                     if(gimbal->Lift.Lift_mode == LIFT_SPEED)
-    //                     {
-    //                         gimbal->Lift.Lift_angle_Min = (float)gimbal->lift_motor->rx_info->motor_angle_sum + 50;
-    //                         gimbal->Lift.Lift_angle_Max = gimbal->Lift.Lift_angle_Min + gimbal->Lift.Lift_distance;
-	// 						gimbal->Lift.Find_current = find_target_test_2;
-	// 						gimbal->Lift.block_time_max = 500;
-    //                     }
-    //                     if(gimbal->Lift.Lift_mode == LIFT_ANGLE)
-    //                     {
-    //                         gimbal->Lift.block_flag = true;
-    //                     }
-    //                 }
-	// 			gimbal->Lift.Lift_mode = LIFT_STOP;
+                    if(gimbal->Lift.is_use_angle == 1)
+                    {
+                        if(gimbal->Lift.Lift_mode == LIFT_SPEED)
+                        {
+                            gimbal->Lift.Lift_angle_Min = (float)gimbal->lift_motor->rx_info->motor_angle_sum + 50;
+                            gimbal->Lift.Lift_angle_Max = gimbal->Lift.Lift_angle_Min + gimbal->Lift.Lift_distance;
+							gimbal->Lift.Find_current = find_target_test_2;
+							gimbal->Lift.block_time_max = 500;
+                        }
+                        if(gimbal->Lift.Lift_mode == LIFT_ANGLE)
+                        {
+                            gimbal->Lift.block_flag = true;
+                        }
+                    }
+				gimbal->Lift.Lift_mode = LIFT_STOP;
 
-	// 			if(gimbal->Lift.lift_state == LIFT_UTD)
-	// 				gimbal->Lift.lift_state = LIFT_DOWN;
+				if(gimbal->Lift.lift_state == LIFT_UTD)
+					gimbal->Lift.lift_state = LIFT_DOWN;
 				
-	// 			else if(gimbal->Lift.lift_state == LIFT_DTU)
-	// 				gimbal->Lift.lift_state = LIFT_UP;
+				else if(gimbal->Lift.lift_state == LIFT_DTU)
+					gimbal->Lift.lift_state = LIFT_UP;
 			
-	// 			gimbal->Lift.is_find_limit = true;
-	// 			gimbal->Lift.Limit_find_time = 0;
-	// 			}
+				gimbal->Lift.is_find_limit = true;
+				gimbal->Lift.Limit_find_time = 0;
+				}
 				
-	// 			else
-	// 			gimbal->Lift.block_time ++;
-	// 		}
+				else
+				gimbal->Lift.block_time ++;
+			}
 }
 
 /**
@@ -413,13 +414,13 @@ static void Gimbal_DOG_Mode_change(gimbal_t *gimbal)
  */
 static void Gimbal_protect(gimbal_t *gimbal)
 {
-    // if(gimbal->gimbal_mode == G_SLEEP)//遥控器失联
-    // {
-    //     //直接睡大觉
-    //     gimbal->lift_motor->tx_info->torque = 0;      /* 未移植(motor.h) */
-    //     gimbal->pitch_motor->tx_info->torque = 0;     /* 未移植(motor.h) */
-    //     gimbal->yaw_motor->tx_info->torque = 0;       /* 未移植(motor.h) */
-    // }
+    if(gimbal->gimbal_mode == G_SLEEP)//遥控器失联
+    {
+        //直接睡大觉
+        gimbal->lift_motor->tx_info->torque = 0;
+        gimbal->pitch_motor->tx_info->torque = 0;
+        gimbal->yaw_motor->tx_info->torque = 0;
+    }
 }
 
 float yaw ;
@@ -470,36 +471,36 @@ static void Gimbal_angle_protect(gimbal_t *gimbal)
 
 static void Gimbal_Init_proccess(gimbal_t *gimbal)
 {
-	// if(gimbal->Lift.lift_state == LIFT_DOWN)                          /* 未移植(motor.h) */
-	// 		{
-	// 			gimbal->init_info.init_flag = 1;
-	// 			gimbal->init_info.init_time = 0;
-	// 			gimbal->Lift.Find_current = find_target_test_2;
-	// 		}
-    //  else if(my_abs(gimbal->base_info.pitch_mec_360_angle - 0.f) < gimbal->init_info.pitchInitAngleTolerance 
-	// 		&& my_abs(gimbal->base_info.yaw_mec_360_angle - YAW_MOTOR_ANGLE_MIDDLE/PI*180) < gimbal->init_info.yawInitAngleTolerance
-	// 		&& my_abs(gimbal->base_info.pitch_mec_speed) < gimbal->init_info.pitchInitSpeedTolerance
-	// 		&& my_abs(gimbal->base_info.yaw_mec_speed) < gimbal->init_info.yawInitSpeedTolerance)
+	if(gimbal->Lift.lift_state == LIFT_DOWN)
+			{
+				gimbal->init_info.init_flag = 1;
+				gimbal->init_info.init_time = 0;
+				gimbal->Lift.Find_current = find_target_test_2;
+			}
+     else if(abs(gimbal->base_info.pitch_mec_360_angle - 0.f) < gimbal->init_info.pitchInitAngleTolerance 
+			&& abs(gimbal->base_info.yaw_mec_360_angle - YAW_MOTOR_ANGLE_MIDDLE/PI*180) < gimbal->init_info.yawInitAngleTolerance
+			&& abs(gimbal->base_info.pitch_mec_speed) < gimbal->init_info.pitchInitSpeedTolerance
+			&& abs(gimbal->base_info.yaw_mec_speed) < gimbal->init_info.yawInitSpeedTolerance)
 			 
-	// 	{
-	// 		gimbal->gimbal_reset_state = DEV_RESET_OK;
-	// 		gimbal->Lift.Lift_mode = LIFT_SPEED;
-	// 		gimbal->pid_info.lift_target_speed_raw = -1*gimbal->Lift.Limit_find_speed * gimbal->Lift.Lift_direction;
-	//     }
+		{
+			gimbal->gimbal_reset_state = DEV_RESET_OK;
+			gimbal->Lift.Lift_mode = LIFT_SPEED;
+			gimbal->pid_info.lift_target_speed_raw = -1*gimbal->Lift.Limit_find_speed * gimbal->Lift.Lift_direction;
+	    }
 		
-	// 	//超时仅用于测试
-    //     if(gimbal->init_info.init_time > gimbal->init_info.init_time_max)
-    //     {
-	// 		gimbal->gimbal_reset_state = DEV_RESET_NO;
-    //         gimbal->init_info.init_time = 0;
-	// 		gimbal->init_info.init_flag = 1;
-	// 		gimbal->Lift.lift_state = LIFT_DOWN;
-	// 		gimbal->Lift.Lift_mode = LIFT_STOP;
-    //     }
-    //     else if (gimbal->init_info.init_flag == 0)
-    //     {
-    //         gimbal->init_info.init_time++;
-    //     }
+		//超时仅用于测试
+        if(gimbal->init_info.init_time > gimbal->init_info.init_time_max)
+        {
+			gimbal->gimbal_reset_state = DEV_RESET_NO;
+            gimbal->init_info.init_time = 0;
+			gimbal->init_info.init_flag = 1;
+			gimbal->Lift.lift_state = LIFT_DOWN;
+			gimbal->Lift.Lift_mode = LIFT_STOP;
+        }
+        else if (gimbal->init_info.init_flag == 0)
+        {
+            gimbal->init_info.init_time++;
+        }
 }
 
 static void Gimbal_Dog_PID_cal(gimbal_t *gimbal)

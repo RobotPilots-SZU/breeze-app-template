@@ -9,8 +9,8 @@
 #define __GIMBAL_H
 
 #include "rp_config.h"       
-#include "rp_device_config.h" /* 已移植 */
-// #include "motor.h"            /* 未移植 */
+#include "rp_device_config.h" 
+#include "device_motor.h"    
 #include "rp_math.h"
 #include "pid.h"
 #include <stdbool.h>
@@ -180,9 +180,9 @@ typedef struct gimbal_class_t
 {
 	int car_state;				   //失联 遥控器 键鼠
 	
-	// Motor_DM_t *pitch_motor;       /* 未移植(motor.h) */
-	// Motor_DM_t *yaw_motor;         /* 未移植(motor.h) */
-	// Motor_RM_t *lift_motor;        /* 未移植(motor.h) */
+	Motor_DM_t *pitch_motor;
+	Motor_DM_t *yaw_motor;
+	Motor_RM_t *lift_motor;
 
 	Lift_t Lift;    //升降相关
 
