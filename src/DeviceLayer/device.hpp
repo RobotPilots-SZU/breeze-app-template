@@ -5,6 +5,8 @@
 #include "rtt.h"
 #include "infantry.h"
 #include "chassis.h"
+#include "gimbal.h"
+#include "launch.h"
 #include "iwdg.h"
 
 int Device_Init(void);
