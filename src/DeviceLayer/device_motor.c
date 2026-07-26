@@ -176,6 +176,12 @@ int Motor_Init()
             return -ENODEV;
         }
     }
+    // if(register_motor(dail_motor.lk_motor) < 0)
+    // {
+    //     LOG_ERR("Failed to register dial motor");
+    //     return -ENODEV;
+    // }
+    
 
     for (int i = 0; i < FRIC_CNT; i++)
     {
@@ -186,6 +192,11 @@ int Motor_Init()
     {
         gimbal_motor[i].single_sleep(&gimbal_motor[i]);
     }
+    // motor_disable(dail_motor.lk_motor);  // 上电卸力
+    
+
+    // dail_motor.init(&dail_motor);
+    
 
     return 0;
 }

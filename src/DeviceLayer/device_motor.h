@@ -18,6 +18,8 @@
 #define GIMBAL_YAW_NODE DT_NODELABEL(gimbal_yaw)
 #define GIMBAL_PITCH_NODE DT_NODELABEL(gimbal_pitch)
 
+// #define DIAL_MOTOR_NODE DT_NODELABEL(lk_motor1)
+
 #ifdef CONFIG_CAN_RX_MANAGER
 #define RX_MANAGER1_NODE DT_NODELABEL(can_rx_mgr1)
 #define RX_MANAGER2_NODE DT_NODELABEL(can_rx_mgr2)

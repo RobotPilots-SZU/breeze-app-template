@@ -99,6 +99,10 @@ interrupts = <35 0>;
         mit-params-limit = <500000 0 5000 0>;
     };
 
+        Tx-feq = <1000>;
+        motor-encoder = <65535>;
+        motor-transmission-ratio = <9>;
+        vel-max = <45000>;         
     gimbal_PITCH:motor4{
         compatible = "rp,dm-can-motor";
         status = "okay";
@@ -109,11 +113,7 @@ interrupts = <35 0>;
         rx-id = <0x11>;
         motor-type = "DM43";
         label = "gimbal_pitch";
-        control-mode = "MIT";
-        Tx-feq = <1000>;
-        motor-encoder = <65535>;
-        motor-transmission-ratio = <9>;
-        vel-max = <45000>;          // 这里的整数都要除以1000才是实际的上限，必须与上位机的值对应
+        control-mode = "MIT"; // 这里的整数都要除以1000才是实际的上限，必须与上位机的值对应
         tq-max = <54000>;
         pos-max = <3141>;
         mit-params-limit = <500000 0 5000 0>;

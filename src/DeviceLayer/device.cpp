@@ -16,9 +16,6 @@ SENSOR_DT_STREAM_IODEV(gyro_iodev, DT_NODELABEL(bmi08x_gyro), STREAM_TRIGGERS);
 RTIO_DEFINE_WITH_MEMPOOL(ctx, 16, 16, 64, 128, sizeof(void *));
 /* 参数说明：名称, sq大小, cq大小, 内存池块数, 每块大小, 对齐方式 */
 
-/* 遥控器 */
-const struct device *remote_dev = DEVICE_DT_GET(DT_ALIAS(remote0));
-
 /* 看门狗 */
 const struct device *iwdg_dev = DEVICE_DT_GET(DT_ALIAS(watchdog0));
 
@@ -35,13 +32,6 @@ int Device_Init(void)
         return ret;
     }
     
-    ret = Remote_Init(remote_dev);
-    if (ret != 0)
-    {
-        LOG_ERR("Remote_Init failed with error code: %d", ret);
-        return ret;
-    }
-    
     ret = Motor_Init();
     if (ret != 0)
     {
@@ -55,15 +45,13 @@ int Device_Init(void)
         LOG_ERR("Imu_Init failed with error code: %d", ret);
         return ret;
     }
-    // ret = board.init(&board);
-    // if (ret != 0)
-    // {
-    //     LOG_ERR("Board_Init failed with error code: %d", ret);
-    //     return ret;
-    // }
+    ret = Board_Init();
+    if (ret != 0)
+    {
+        LOG_ERR("Board_Init failed with error code: %d", ret);
+        return ret;
+    }
 
-    // chassis.init(&chassis);
-    // infantry.init(&infantry);
     vofa_rtt_init();
     return 0;
 }
