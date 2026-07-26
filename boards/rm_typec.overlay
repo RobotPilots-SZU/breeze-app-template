@@ -3,6 +3,14 @@
 interrupts = <35 0>;
 };
 
+&bmi08x_accel {
+    fifo-watermark = <3>;
+};
+
+&bmi08x_gyro {
+    fifo-watermark = <3>;
+};
+
 / {
     can_rx_mgr1: can_rx_mgr1 {
         compatible = "rp,can-rx-manager";
@@ -17,6 +25,21 @@ interrupts = <35 0>;
         can-bus = <&can1>;
         label = "can_tx_mgr1";
     };
+
+        can_rx_mgr2: can_rx_mgr2 {
+        compatible = "rp,can-rx-manager";
+        status = "okay";
+        can-bus = <&can2>;
+        label = "can_rx_mgr2";
+    };
+
+    can_tx_mgr2: can_tx_mgr2 {
+        compatible = "rp,can-tx-manager";
+        status = "okay";
+        can-bus = <&can2>;
+        label = "can_tx_mgr2";
+    };
+
 
     dial_motor:lk_motor1{
         compatible = "rp,lk-can-motor";
@@ -34,4 +57,14 @@ interrupts = <35 0>;
         motor-transmission-ratio = <1>;     //减速比在拨盘处已经被包含，拨盘电机不需要再设置减速比
     };
 
+};
+
+/ {
+    aliases {
+        watchdog0 = &iwdg;  /* 将 watchdog0 指向 IWDG 硬件 */
+    };
+};
+
+&iwdg {
+    status = "okay"; /* 启用独立看门狗 IWDG */
 };
