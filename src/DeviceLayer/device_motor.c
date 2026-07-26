@@ -2,256 +2,123 @@
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(motor, LOG_LEVEL_INF);
 
-pid_ctrl_t wheel_speed_pid[WHEEL_CNT] = {
-    [WHEEL_LF] = {
-        .kp = 1,
+pid_ctrl_t fric_speed_pid[FRIC_CNT] = {
+    [FRIC_L] = {
+        .kp = 0,
         .ki = 0,
         .kd = 0,
-        .integral_max = 0,
-        .out_max = 5.4,
+        .integral_max = 7000.0f,
+        .out_max = 10000.0f,
 
     },
-    [WHEEL_LB] = {
-        .kp = 1,
+    [FRIC_R] = {
+        .kp = 0,
         .ki = 0,
         .kd = 0,
-        .integral_max = 0,
-        .out_max = 5.4,
-
-    },
-    [WHEEL_RF] = {
-        .kp = 1,
-        .ki = 0,
-        .kd = 0,
-        .integral_max = 0,
-        .out_max = 5.4,
-
-    },
-    [WHEEL_RB] = {
-        .kp = 1,
-        .ki = 0,
-        .kd = 0,
-        .integral_max = 0,
-        .out_max = 5.4,
+        .integral_max = 7000.0f,
+        .out_max = 10000.0f,
 
     },
 
 };
-
-pid_ctrl_t wheel_angle_inn_pid[WHEEL_CNT] = {
-    [WHEEL_LF] = {
-        .kp = 0,
-        .ki = 0,
-        .kd = 0,
-        .integral_max = 0,
-        .out_max = 0,
-
+pid_ctrl_t fric_angle_inn_pid[FRIC_CNT];
+pid_ctrl_t fric_angle_out_pid[FRIC_CNT];
+Motor_RM_Rx_Info_t fric_rx_info[FRIC_CNT];
+Motor_RM_Tx_Info_t fric_tx_info[FRIC_CNT];
+Motor_RM_State_t fric_state[FRIC_CNT];
+Motor_RM_Ctrl_Info_t fric_ctrl_info[FRIC_CNT] = {
+    [FRIC_L] = {
+        .angle_ctrl_inner = &fric_angle_inn_pid[FRIC_L],
+        .angle_ctrl_outer = &fric_angle_out_pid[FRIC_L],
+        .speed_ctrl = &fric_speed_pid[FRIC_L],
     },
-    [WHEEL_LB] = {
-        .kp = 0,
-        .ki = 0,
-        .kd = 0,
-        .integral_max = 0,
-        .out_max = 0,
-
+    [FRIC_R] = {
+        .angle_ctrl_inner = &fric_angle_inn_pid[FRIC_R],
+        .angle_ctrl_outer = &fric_angle_out_pid[FRIC_R],
+        .speed_ctrl = &fric_speed_pid[FRIC_R],
     },
-    [WHEEL_RF] = {
-        .kp = 0,
-        .ki = 0,
-        .kd = 0,
-        .integral_max = 0,
-        .out_max = 0,
-
-    },
-    [WHEEL_RB] = {
-        .kp = 0,
-        .ki = 0,
-        .kd = 0,
-        .integral_max = 0,
-        .out_max = 0,
-
-    },
-
 };
 
-pid_ctrl_t wheel_angle_out_pid[WHEEL_CNT] = {
-    [WHEEL_LF] = {
-        .kp = 0,
-        .ki = 0,
-        .kd = 0,
-        .integral_max = 0,
-        .out_max = 3.8,
-
-    },
-    [WHEEL_LB] = {
-        .kp = 0,
-        .ki = 0,
-        .kd = 0,
-        .integral_max = 0,
-        .out_max = 3.8,
-
-    },
-    [WHEEL_RF] = {
-        .kp = 0,
-        .ki = 0,
-        .kd = 0,
-        .integral_max = 0,
-        .out_max = 3.8,
-
-    },
-    [WHEEL_RB] = {
-        .kp = 0,
-        .ki = 0,
-        .kd = 0,
-        .integral_max = 0,
-        .out_max = 3.8,
-
-    },
-
-};
-
-Motor_RM_Rx_Info_t wheel_rx_info[WHEEL_CNT];
-Motor_RM_Tx_Info_t wheel_tx_info[WHEEL_CNT];
-Motor_RM_State_t wheel_state[WHEEL_CNT];
-Motor_RM_Ctrl_Info_t wheel_ctrl_info[WHEEL_CNT] = {
-    [WHEEL_LF] = {
-        .angle_ctrl_inner = &wheel_angle_inn_pid[WHEEL_LF],
-        .angle_ctrl_outer = &wheel_angle_out_pid[WHEEL_LF],
-        .speed_ctrl = &wheel_speed_pid[WHEEL_LF],
-    },
-    [WHEEL_LB] = {
-        .angle_ctrl_inner = &wheel_angle_inn_pid[WHEEL_LB],
-        .angle_ctrl_outer = &wheel_angle_out_pid[WHEEL_LB],
-        .speed_ctrl = &wheel_speed_pid[WHEEL_LB],
-    },
-    [WHEEL_RF] = {
-        .angle_ctrl_inner = &wheel_angle_inn_pid[WHEEL_RF],
-        .angle_ctrl_outer = &wheel_angle_out_pid[WHEEL_RF],
-        .speed_ctrl = &wheel_speed_pid[WHEEL_RF],
-    },
-    [WHEEL_RB] = {
-        .angle_ctrl_inner = &wheel_angle_inn_pid[WHEEL_RB],
-        .angle_ctrl_outer = &wheel_angle_out_pid[WHEEL_RB],
-        .speed_ctrl = &wheel_speed_pid[WHEEL_RB],
-    },
-
-};
-
-Motor_RM_t wheel_motor[WHEEL_CNT] = {
-    [WHEEL_LF] = {
-        .rx_info = &wheel_rx_info[WHEEL_LF],
-        .tx_info = &wheel_tx_info[WHEEL_LF],
-        .state   = &wheel_state[WHEEL_LF],
-        .ctrl = &wheel_ctrl_info[WHEEL_LF],
-        .motor = DEVICE_DT_GET(CHASSIS_LF_NODE),
+Motor_RM_t fric_motor[FRIC_CNT] = {
+    [FRIC_L] = {
+        .rx_info = &fric_rx_info[FRIC_L],
+        .tx_info = &fric_tx_info[FRIC_L],
+        .state = &fric_state[FRIC_L],
+        .ctrl = &fric_ctrl_info[FRIC_L],
+        .motor = DEVICE_DT_GET(FRIC_L_NODE),
         .single_init = RM_Motor_Init,
+        .type = _6020_Single,
     },
-    [WHEEL_LB] = {
-        .rx_info = &wheel_rx_info[WHEEL_LB],
-        .tx_info = &wheel_tx_info[WHEEL_LB],
-        .state   = &wheel_state[WHEEL_LB],
-        .ctrl = &wheel_ctrl_info[WHEEL_LB],
-        .motor = DEVICE_DT_GET(CHASSIS_LB_NODE),
+    [FRIC_R] = {
+        .rx_info = &fric_rx_info[FRIC_R],
+        .tx_info = &fric_tx_info[FRIC_R],
+        .state = &fric_state[FRIC_R],
+        .ctrl = &fric_ctrl_info[FRIC_R],
+        .motor = DEVICE_DT_GET(FRIC_R_NODE),
         .single_init = RM_Motor_Init,
-    },
-    [WHEEL_RF] = {
-        .rx_info = &wheel_rx_info[WHEEL_RF],
-        .tx_info = &wheel_tx_info[WHEEL_RF],
-        .state   = &wheel_state[WHEEL_RF],
-        .ctrl = &wheel_ctrl_info[WHEEL_RF],
-        .motor = DEVICE_DT_GET(CHASSIS_RF_NODE),
-        .single_init = RM_Motor_Init,
-    },
-    [WHEEL_RB] = {
-        .rx_info = &wheel_rx_info[WHEEL_RB],
-        .tx_info = &wheel_tx_info[WHEEL_RB],
-        .state   = &wheel_state[WHEEL_RB],
-        .ctrl = &wheel_ctrl_info[WHEEL_RB],
-        .motor = DEVICE_DT_GET(CHASSIS_RB_NODE),
-        .single_init = RM_Motor_Init,
+        .type = _6020_Single,
     },
 };
 
 //DM_MOTOR-----------------------------------------------------------
-pid_ctrl_t gimbal_speed_pid[GIMBAL_CNT] = {
-    [YAW] = {
-        .kp = 0,
-        .ki = 0,
-        .kd = 0,
-        .integral_max = 0,
-        .out_max = 5.4,
-
-    },
-};
-
-pid_ctrl_t gimbal_angle_inn_pid[GIMBAL_CNT] = {
-    [YAW] = {
-        .kp = 0,
-        .ki = 0,
-        .kd = 0,
-        .integral_max = 0,
-        .out_max = 0,
-
-    },
-
-};
-
-pid_ctrl_t gimbal_angle_out_pid[GIMBAL_CNT] = {
-    [YAW] = {
-        .kp = 0,
-        .ki = 0,
-        .kd = 0,
-        .integral_max = 0,
-        .out_max = 3.8,
-
-    },
-};
-Motor_DM_Ctrl_Info_t gimbal_ctrl_info[GIMBAL_CNT] = {
-    [YAW] = {
-        .angle_ctrl_inner = &gimbal_angle_inn_pid[YAW],
-        .angle_ctrl_outer = &gimbal_angle_out_pid[YAW],
-        .speed_ctrl = &gimbal_speed_pid[YAW],
-    },
-};
+//pidInfo被放在了gimbal里
+Motor_DM_Ctrl_Info_t Yaw_Ctrl;
 Motor_DM_Rx_Info_t Yaw_Rx_Info;
 Motor_DM_Tx_Info_t Yaw_Tx_Info;
 Motor_DM_State_t Yaw_State;
 
+Motor_DM_Rx_Info_t Pitch_Rx_Info;
+Motor_DM_Tx_Info_t Pitch_Tx_Info;
+Motor_DM_State_t Pitch_State;
+Motor_DM_Ctrl_Info_t Pitch_Ctrl;
+
 Motor_DM_t gimbal_motor[GIMBAL_CNT] =
+{
+    [YAW] =
     {
-        [YAW] =
-            {
-                .rx_info = &Yaw_Rx_Info,
-                .tx_info = &Yaw_Tx_Info,
-                .state = &Yaw_State,
-                .ctrl = &gimbal_ctrl_info[YAW],
-                .motor = DEVICE_DT_GET(GIMBAL_YAW_NODE),
-                .single_init = &DM_Single_Motor_Init,
-                .type = dm_4310,
-            },
+        .rx_info = &Yaw_Rx_Info,
+        .tx_info = &Yaw_Tx_Info,
+        .state = &Yaw_State,
+        .ctrl = &Yaw_Ctrl,
+        .motor = DEVICE_DT_GET(GIMBAL_YAW_NODE),
+        .single_init = &DM_Single_Motor_Init,
+        .type = dm_4310,
+    },
+
+    [PITCH] =
+    {
+        .rx_info = &Pitch_Rx_Info,
+        .tx_info = &Pitch_Tx_Info,
+        .state = &Pitch_State,
+        .ctrl = &Pitch_Ctrl,
+        .motor = DEVICE_DT_GET(GIMBAL_PITCH_NODE),
+        .single_init = &DM_Single_Motor_Init,
+        .type = dm_4310,
+    },
 };
 
 //MOTOR_INIT----------------------------------------------------
 int Motor_Init()
 {
 #ifdef CONFIG_CAN_RX_MANAGER
-    const struct device *rx_mgr = DEVICE_DT_GET(RX_MANAGER_NODE);
+    const struct device *rx_mgr1 = DEVICE_DT_GET(RX_MANAGER1_NODE);
+    const struct device *rx_mgr2 = DEVICE_DT_GET(RX_MANAGER2_NODE);
 #endif
 
-    // for (int i = 0; i < WHEEL_CNT; i++)
-    // {
-    //     if (!wheel_motor[i].motor)
-    //     {
-    //         LOG_ERR("Motor %d not found!", i);
-    //         return -ENODEV;
-    //     }
-    //     if (!device_is_ready(wheel_motor[i].motor))
-    //     {
-    //         LOG_ERR("Motor %d is not ready!", i);
-    //         return -ENODEV;
-    //     }
-    //     wheel_motor[i].single_init(&wheel_motor[i]);
-    // }
+    for (int i = 0; i < FRIC_CNT; i++)
+    {
+        if (!fric_motor[i].motor)
+        {
+            LOG_ERR("FRIC Motor %d not found!", i);
+            return -ENODEV;
+        }
+        if (!device_is_ready(fric_motor[i].motor))
+        {
+            LOG_ERR("FRIC Motor %d is not ready!", i);
+            return -ENODEV;
+        }
+        fric_motor[i].single_init(&fric_motor[i]);
+    }
 
     for (int i = 0; i < GIMBAL_CNT; i++)
     {
@@ -269,28 +136,38 @@ int Motor_Init()
     }
 
 #ifdef CONFIG_CAN_RX_MANAGER
-    if (!rx_mgr)
+    if (!rx_mgr1)
     {
         LOG_ERR("CAN RX manager not found");
         return -ENODEV;
     }
-    if (!device_is_ready(rx_mgr))
+    if (!device_is_ready(rx_mgr1))
     {
-        LOG_ERR("CAN RX manager not ready: %s", rx_mgr->name);
+        LOG_ERR("CAN RX manager not ready: %s", rx_mgr1->name);
+        return -ENODEV;
+    }
+    if (!rx_mgr2)
+    {
+        LOG_ERR("CAN RX manager not found");
+        return -ENODEV;
+    }
+    if (!device_is_ready(rx_mgr2))
+    {
+        LOG_ERR("CAN RX manager not ready: %s", rx_mgr2->name);
         return -ENODEV;
     }
 #endif
 
 
 
-    // for (int i = 0; i < WHEEL_CNT; i++)
-    // {
-    //     if (register_motor(wheel_motor[i].motor) < 0) // 这是通用的多电机注册函数
-    //     {
-    //         LOG_ERR("Failed to register motor %d", i);
-    //         return -ENODEV;
-    //     }
-    // }
+    for (int i = 0; i < FRIC_CNT; i++)
+    {
+        if (register_motor(fric_motor[i].motor) < 0) // 这是通用的多电机注册函数
+        {
+            LOG_ERR("Failed to register motor %d", i);
+            return -ENODEV;
+        }
+    }
     for (int i = 0; i < GIMBAL_CNT; i++)
     {
         if (register_motor(gimbal_motor[i].motor) < 0) // 这是通用的多电机注册函数
@@ -300,10 +177,10 @@ int Motor_Init()
         }
     }
 
-    // for (int i = 0; i < WHEEL_CNT; i++)
-    // {
-    //     wheel_motor[i].single_sleep(&wheel_motor[i]); // 内部使用通用的多电机扭矩控制函数
-    // }
+    for (int i = 0; i < FRIC_CNT; i++)
+    {
+        fric_motor[i].single_sleep(&fric_motor[i]); // 内部使用通用的多电机扭矩控制函数
+    }
 
     for (int i = 0; i < GIMBAL_CNT; i++)
     {
@@ -315,10 +192,10 @@ int Motor_Init()
 
 void Motor_Heartbeat()
 {
-    // for (int i = 0; i < WHEEL_CNT; i++)
-    // {
-    //     wheel_motor[i].single_heart_beat(&wheel_motor[i]);
-    // }
+    for (int i = 0; i < FRIC_CNT; i++)
+    {
+        fric_motor[i].single_heart_beat(&fric_motor[i]);
+    }
 
     for (int i = 0; i < GIMBAL_CNT; i++)
     {
