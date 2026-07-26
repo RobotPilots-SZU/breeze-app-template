@@ -15,5 +15,4 @@ void Module_Work(void)
     Gimbal.work(&Gimbal);
     // fric.work(&fric);
     // shoot.work(&shoot);
-    // Board_Tx_Update(&Board_Tx_Info);     // 在系统task里面实现
 }

@@ -117,16 +117,19 @@ void Gimbal_Work(gimbal_t *gimbal)
     Gimbal_protect(gimbal);
 }
 
-int out = 0,current = 0;
-
 
 /*外部数据更新*/
 static void Gimbal_info_update(gimbal_t *gimbal)
 {
-	static dev_work_state_t last_motor_mode = DEV_OFFLINE;
-	out = gimbal->lift_motor->tx_info->torque;
-	current = gimbal->lift_motor->rx_info->torque_current_raw;
-     //陀螺仪数据 (imu_wrapper返回rad/s, 原始代码使用°/s, 需转换)
+
+    //电机数据更新
+    for (int i = 0; i < RM_CNT;i++)
+    {
+        rm_motor[i].rx(&rm_motor[i]);
+    }
+    static dev_work_state_t last_motor_mode = DEV_OFFLINE;
+
+    // 陀螺仪数据 (imu_wrapper返回rad/s, 原始代码使用°/s, 需转换)
     gimbal->base_info.yaw_imu_angle = imu_get_yaw();
     gimbal->base_info.yaw_imu_speed = imu_get_gyro_z() * 57.2958f;     // rad/s -> °/s
     gimbal->base_info.pitch_imu_angle = imu_get_pitch();
@@ -357,7 +360,7 @@ static void Gimbal_DOG_Mode_change(gimbal_t *gimbal)
 				gimbal->Lift.Lift_mode = LIFT_ANGLE;
 				gimbal->pid_info.lift_target_raw = gimbal->Lift.Lift_angle_Min;
 				
-				if(fabs(gimbal->base_info.Lift_Motor_angle - gimbal->Lift.Lift_angle_Min) \
+				if(fabsf(gimbal->base_info.Lift_Motor_angle - gimbal->Lift.Lift_angle_Min) \
                     <= gimbal->Lift.angle_tolerance)
                 gimbal->Lift.lift_state = LIFT_DOWN;
 			}
@@ -374,7 +377,7 @@ static void Gimbal_DOG_Mode_change(gimbal_t *gimbal)
 				gimbal->Lift.Lift_mode = LIFT_ANGLE;
 				gimbal->pid_info.lift_target_raw = gimbal->Lift.Lift_angle_Max;
 				
-				if(fabs(gimbal->base_info.Lift_Motor_angle - gimbal->Lift.Lift_angle_Max) \
+				if(fabsf(gimbal->base_info.Lift_Motor_angle - gimbal->Lift.Lift_angle_Max) \
                     <= gimbal->Lift.angle_tolerance)
                 gimbal->Lift.lift_state = LIFT_UP;
 			}
@@ -400,9 +403,11 @@ static void Gimbal_DOG_Mode_change(gimbal_t *gimbal)
 				gimbal->Lift.Limit_find_time ++;
 	}
     if(gimbal->gimbal_mode == G_SLEEP)
+    {
 			gimbal->Lift.Lift_mode = LIFT_STOP;
+    }
 
-			block_check(gimbal);   
+    block_check(gimbal);   
 			
     gimbal->Lift.Last_Lift_state = gimbal->Lift.lift_state;
 }
@@ -477,10 +482,10 @@ static void Gimbal_Init_proccess(gimbal_t *gimbal)
 				gimbal->init_info.init_time = 0;
 				gimbal->Lift.Find_current = find_target_test_2;
 			}
-     else if(abs(gimbal->base_info.pitch_mec_360_angle - 0.f) < gimbal->init_info.pitchInitAngleTolerance 
-			&& abs(gimbal->base_info.yaw_mec_360_angle - YAW_MOTOR_ANGLE_MIDDLE/PI*180) < gimbal->init_info.yawInitAngleTolerance
-			&& abs(gimbal->base_info.pitch_mec_speed) < gimbal->init_info.pitchInitSpeedTolerance
-			&& abs(gimbal->base_info.yaw_mec_speed) < gimbal->init_info.yawInitSpeedTolerance)
+     else if(fabsf(gimbal->base_info.pitch_mec_360_angle - 0.f) < gimbal->init_info.pitchInitAngleTolerance 
+			&& fabsf(gimbal->base_info.yaw_mec_360_angle - YAW_MOTOR_ANGLE_MIDDLE / PI * 180.0f) < gimbal->init_info.yawInitAngleTolerance
+			&& fabsf(gimbal->base_info.pitch_mec_speed) < gimbal->init_info.pitchInitSpeedTolerance
+			&& fabsf(gimbal->base_info.yaw_mec_speed) < gimbal->init_info.yawInitSpeedTolerance)
 			 
 		{
 			gimbal->gimbal_reset_state = DEV_RESET_OK;
@@ -527,8 +532,6 @@ static void Gimbal_Dog_PID_cal(gimbal_t *gimbal)
 
 static void Gimbal_Pid_cal(gimbal_t *gimbal)
 {
-    /*云台状态机*/
-    static gimbal_mode_e last_mode = G_SLEEP;
 
 	gravity_f_cal(gimbal);
 	
@@ -577,7 +580,7 @@ void Gimbal_Init(gimbal_t *gimbal)
 
 
     gimbal->pid_info.pitch_target_raw = 0.f;
-    gimbal->pid_info.yaw_target_raw = YAW_MOTOR_ANGLE_MIDDLE/PI*180;
+    gimbal->pid_info.yaw_target_raw = YAW_MOTOR_ANGLE_MIDDLE / PI * 180.0f;
 
     gimbal->init_info.init_flag = 0;
 }
@@ -585,11 +588,11 @@ void Gimbal_Init(gimbal_t *gimbal)
 //重力补偿计算
 static void gravity_f_cal(gimbal_t *gimbal)
 {
-	double middle_angle = 2.678706762f - PITCH_MOTOR_ANGLE_MIDDLE;
-	float k = 4.2072;
-	float b = -2.496;
+	float middle_angle = 2.678706762f - PITCH_MOTOR_ANGLE_MIDDLE;
+	float k = 4.2072f;
+	float b = -2.496f;
 
-	gimbal->base_info.gravity_f = cos(gimbal->base_info.pitch_motor_angle - middle_angle)*k+b;
+	gimbal->base_info.gravity_f = cosf(gimbal->base_info.pitch_motor_angle - middle_angle) * k + b;
 }
 
 
@@ -605,8 +608,8 @@ static void Gimbal_Dog_reset_angle_check(gimbal_t *gimbal)
 
     // 检测追随结果
     if (gimbal->gimbal_reset_state == DEV_RESET_NO &&
-        fabs(gimbal->base_info.yaw_motor_angle - YAW_MOTOR_ANGLE_MIDDLE) <= gimbal->init_info.yawInitAngleTolerance \
-        && fabs(gimbal->base_info.pitch_motor_angle) <= gimbal->init_info.pitchInitAngleTolerance)
+        fabsf(gimbal->base_info.yaw_motor_angle - YAW_MOTOR_ANGLE_MIDDLE) <= gimbal->init_info.yawInitAngleTolerance \
+        && fabsf(gimbal->base_info.pitch_motor_angle) <= gimbal->init_info.pitchInitAngleTolerance)
         gimbal->gimbal_reset_state = DEV_RESET_OK;
 
 }

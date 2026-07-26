@@ -1,5 +1,8 @@
 #include "board_protocol.h"
-
+#include "rp_math.h"
+#include "imu_wrapper.h"
+#include "device_motor.h"
+#include "gimbal.h"
 
 Board_Tx_Info_t Board_Tx_Info;
 Board_Rx_Info_t Board_Rx_Info;
@@ -177,10 +180,10 @@ void Board_Tx_Update(Board_Tx_Info_t *Board_Tx_Info)
     // 云台信息 (Board_Gimbal_Meg_t)
     Board_Tx_Info->gimbal_meg.yaw_imu = imu_get_yaw();
     Board_Tx_Info->gimbal_meg.pitch_imu = imu_get_pitch();
-    //TO DO 移植gimbal
-    // Board_Tx_Info->gimbal_meg.pitch_mec = Gimbal.base_info.pitch_motor_angle;
-    // Board_Tx_Info->gimbal_meg.yaw_mec = Gimbal.base_info.yaw_motor_angle;
-    // Board_Tx_Info->state_meg.lift_state = Gimbal.Lift.lift_state;
+
+    Board_Tx_Info->gimbal_meg.pitch_mec = Gimbal.base_info.pitch_motor_angle;
+    Board_Tx_Info->gimbal_meg.yaw_mec = Gimbal.base_info.yaw_motor_angle;
+    Board_Tx_Info->state_meg.lift_state = Gimbal.Lift.lift_state;
 
     //TO DO 移植vision
     // 视觉目标 (Board_Vision_Meg_t)
@@ -190,19 +193,20 @@ void Board_Tx_Update(Board_Tx_Info_t *Board_Tx_Info)
    
     //TO DO 移植dev_motor
     // 电机状态 (1字节 位域结构体)
-    // Board_Tx_Info->state_meg.pitch_motor_state = (dm_motor[PITCH].state->status == DEV_ONLINE) ? 1 : 0;
-    // Board_Tx_Info->state_meg.yaw_motor_state = (dm_motor[YAW].state->status == DEV_ONLINE) ? 1 : 0;
-    // Board_Tx_Info->state_meg.lift_motor_state = (rm_motor[LIFT].state->status == DEV_ONLINE) ? 1 : 0;
-    // Board_Tx_Info->state_meg.l_fric_state = (rm_motor[L_Fric].state->status == DEV_ONLINE) ? 1 : 0;
-    // Board_Tx_Info->state_meg.r_fric_state = (rm_motor[R_Fric].state->status == DEV_ONLINE) ? 1 : 0;
+    Board_Tx_Info->state_meg.pitch_motor_state = (gimbal_motor[PITCH].state->status == DEV_ONLINE) ? 1 : 0;
+    Board_Tx_Info->state_meg.yaw_motor_state = (gimbal_motor[YAW].state->status == DEV_ONLINE) ? 1 : 0;
+    Board_Tx_Info->state_meg.lift_motor_state = (rm_motor[LIFT].state->status == DEV_ONLINE) ? 1 : 0;
+    Board_Tx_Info->state_meg.l_fric_state = (rm_motor[FRIC_L].state->status == DEV_ONLINE) ? 1 : 0;
+    Board_Tx_Info->state_meg.r_fric_state = (rm_motor[FRIC_R].state->status == DEV_ONLINE) ? 1 : 0;
     // Board_Tx_Info->state_meg.dial_motor_state = (dail_motor.KT_motor_info .state_info.work_state == M_ONLINE) ? 1 : 0;
     
-    // if(Gimbal.Lift.lift_state == LIFT_DOWN)
-    //     Board_Tx_Info->state_meg.lift_state = 0;
-    // else if(Gimbal.Lift.lift_state == LIFT_UP)
-    //     Board_Tx_Info->state_meg.lift_state = 2;
-	// else
-	// 	Board_Tx_Info->state_meg.lift_state = 1;
+    if(Gimbal.Lift.lift_state == LIFT_DOWN)
+        Board_Tx_Info->state_meg.lift_state = 0;
+    else if(Gimbal.Lift.lift_state == LIFT_UP)
+        Board_Tx_Info->state_meg.lift_state = 2;
+	else
+		Board_Tx_Info->state_meg.lift_state = 1;
+
     // Board_Tx_Info->state_meg.vision_state = (vision.status->rx_state == DEV_ONLINE) ? 1 : 0;
 
 }

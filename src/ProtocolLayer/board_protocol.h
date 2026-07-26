@@ -1,20 +1,18 @@
 #ifndef __BOARD_PROTOCOL_H_
 #define __BOARD_PROTOCOL_H_
 
-#include <zephyr/types.h>
-#include "rp_device_config.h"
-// #include "vision_protocol.h"
-// #include "judge_protocol.h"
-// #include "gimbal.h"
-// #include "shoot.h"
-#include "rp_device_config.h"
-#include "rp_math.h"
 #include <string.h>
 #include <stdbool.h>
 #include <zephyr/kernel.h>
 #include <drivers/can_tx_manager.h>
 #include <drivers/can_rx_manager.h>
-#include "imu_wrapper.h"
+#include <zephyr/types.h>
+#include "rp_device_config.h"
+
+// #include "shoot.h"
+// #include "vision_protocol.h"
+// #include "judge_protocol.h"
+
 
 #ifdef __cplusplus
 extern "C" {

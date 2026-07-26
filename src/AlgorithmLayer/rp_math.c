@@ -19,7 +19,7 @@ float Lowpass(float X_last, float X_new, float K)
 /** @brief  过半圈处理 angle：源数据  max:数据范围 */
 float motor_half_cycle(float angle, float max)
 {
-	if (abs(angle) > (max / 2))
+	if (fabsf(angle) > (max / 2))
 	{
 		if (angle >= 0)
 			angle += -max;

@@ -16,7 +16,7 @@
 
 
 //需改 且需保证电机正方向与陀螺仪正方向相同     
-#define YAW_MOTOR_ANGLE_MIDDLE      -0.67270875	//同时也是进入狗洞模式的唯一角度 2.48340917f	
+#define YAW_MOTOR_ANGLE_MIDDLE      -0.67270875f	//同时也是进入狗洞模式的唯一角度 2.48340917f	
 #define PITCH_MOTOR_ANGLE_MIDDLE 	2.59309077f  //上正下负
 #define GIMBAL_MAX_MEC_ANGEL		30.f
 #define GIMBAL_MIN_MEC_ANGEL 		-8.f

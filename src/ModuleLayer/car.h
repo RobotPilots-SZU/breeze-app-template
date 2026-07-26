@@ -6,7 +6,7 @@
   */
 #pragma once
 
-#include "board_protocol.h"
+
 #include "gimbal.h"
 // #include "dial.h"
 

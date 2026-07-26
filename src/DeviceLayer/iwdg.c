@@ -8,14 +8,8 @@
 */
 LOG_MODULE_REGISTER(iwdg, LOG_LEVEL_INF);
        
-/* 在调试暂停的时候暂停看门狗计数 */
-// 实测用处不大，在看门狗处同时打两个断点gdb调试就会崩溃
-#define DEBUG
-#ifndef DEBUG
-    int flags = 0;
-#else
-    int flags = WDT_OPT_PAUSE_HALTED_BY_DBG;
-#endif
+int flags = WDT_OPT_PAUSE_HALTED_BY_DBG;
+
 
 static int iwdg_channel_id;
 static struct wdt_timeout_cfg iwdg_config;

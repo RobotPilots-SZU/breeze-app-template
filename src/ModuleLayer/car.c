@@ -6,6 +6,7 @@
   ******************************************************************************
   */
 #include "car.h"
+#include "board_protocol.h"
 
 /* Private function prototypes -----------------------------------------------*/
 /*main task*/
@@ -128,7 +129,6 @@ void car_update(car_t *car)
 static void Car_Shoot_Mode_Update(car_t *car)
 {
 //   Vision_t* Vision = car->vision;
-  Board_Rx_Info_t board_rx;
 
   //开启视觉时发射标志位交予控制，在dial中被调用
   if(car->vision_flag.normal_vision_flag == true)
@@ -164,7 +164,7 @@ static void Car_Shoot_Mode_Update(car_t *car)
     car->shoot_flag.Shoot_Mode = Board_Rx_Info.shoot_pkt.shoot_mode;
   }
 
-//   if(rm_motor[L_Fric].state->status != DEV_OFFLINE && rm_motor[R_Fric].state->status != DEV_OFFLINE\
+//   if(rm_motor[L_Fric].state->status != DEV_OFFLINE && rm_motor[R_Fric].state->status != DEV_OFFLINE
 //       && shoot.state == S_WAITING && car->vision_flag.vision_mode_flag == true)
 //   {
 //     car->vision_flag.is_ready_shoot = 1;
