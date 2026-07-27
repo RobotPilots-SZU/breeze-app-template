@@ -18,18 +18,18 @@
 #define  ID_MEG_05     0xC5
 
 typedef struct{
-  uint8_t  car_state;       //0是卸力，1是遥控，2是键鼠
-//	uint8_t  gimbal_state;    //0是卸力，1是有力
-//	uint8_t  launch_state;    //0是关发射机构，1是开发射机构
-  uint8_t  gimbal_mode;        //0是机械，1是陀螺
-  uint8_t  vision_mode;     //0无视觉模式，1是普通自瞄，2是小符，3是大符，4是前哨，5是英雄
+  	uint8_t  car_state;       //0是卸力，1是遥控，2是键鼠
+	uint8_t  gimbal_state;    //0是卸力，1是有力
+	uint8_t  launch_state;    //0是关发射机构，1是开发射机构
+	uint8_t  gimbal_mode;        //0是机械，1是陀螺
+	uint8_t  vision_mode;     //0无视觉模式，1是普通自瞄，2是小符，3是大符，4是前哨，5是英雄
 
-  uint8_t  game_start;
-  uint8_t  my_color;
-	
-  float    v_x;
-  float    v_y;
-	
+	uint8_t  game_start;
+	uint8_t  my_color;
+		
+	float    v_x;
+	float    v_y;
+		
 }Board_Car_Pkt_t;
 
 
