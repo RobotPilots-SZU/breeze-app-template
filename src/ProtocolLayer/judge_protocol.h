@@ -2,8 +2,6 @@
 #ifndef __JUDGE_POTOCOL_H
 #define __JUDGE_POTOCOL_H
 
-#include "stm32h7xx_hal.h"
-
 /* ֡ͷ */
 typedef struct 
 {

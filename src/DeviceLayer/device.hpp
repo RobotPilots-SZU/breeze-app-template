@@ -8,6 +8,7 @@
 #include "gimbal.h"
 #include "launch.h"
 #include "iwdg.h"
+#include "judge.h"
 
 int Device_Init(void);
 

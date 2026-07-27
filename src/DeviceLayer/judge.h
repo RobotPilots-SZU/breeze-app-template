@@ -448,8 +448,8 @@ typedef struct Judge_Struct_t
 	
 	void (*rx)(uint16_t id, uint8_t *rxBuf);
 
-	void (*init)(struct Judge_Struct_t *judge);
-	
+    int (*init)(struct Judge_Struct_t *judge);
+
 }Judge_t;
 
 
@@ -494,7 +494,7 @@ extern Judge_t judge;
 
 extern bullet_data_t  shoot_statistics;
 
-void Judge_Init(Judge_t* judge);
+int Judge_Init(Judge_t* judge);
 void Judge_Heart_Beat(Judge_t* judge);
 void Judge_Data_Update(uint16_t id, uint8_t *rxBuf);
 

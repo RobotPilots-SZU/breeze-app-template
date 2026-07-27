@@ -1,10 +1,10 @@
 /* Includes ------------------------------------------------------------------*/
+#include <zephyr/kernel.h>
 #include "judge.h"
 #include "judge_protocol.h"
-#include "Board_protocol.h"
-#include "imu_sensor.h"
-#include "cap.h"
-#include "drv_tick.h"
+#include "board_protocol.h"
+//#include "cap.h"
+
 
 Judge_Info_t Judge_Info;
 Judge_Pkt_t Judge_Pkt;
@@ -380,12 +380,12 @@ void Shooting_Cmd_Excute_Tick_Calculating(uint8_t flag)
 	const uint8_t buf_length = 100;
 	if (flag == 0)//命令开始执行
 	{
-		cmd_start_tick = HAL_GetTick();
-	}
+    cmd_start_tick = k_uptime_get_32();
+  }
 	else if (flag == 1)//接收到弹速
 	{
-		rx_bullet_tick = HAL_GetTick();
-		shoot_statistics.shooting_cmd_excute_tick=rx_bullet_tick - cmd_start_tick;
+    rx_bullet_tick = k_uptime_get_32();
+    shoot_statistics.shooting_cmd_excute_tick=rx_bullet_tick - cmd_start_tick;
 		shoot_statistics.shooting_cmd_excute_tick_buf[rx_bullet_cnt]=shoot_statistics.shooting_cmd_excute_tick;
 		
 		//移动指针
