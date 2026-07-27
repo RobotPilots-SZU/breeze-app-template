@@ -127,6 +127,10 @@ static void Gimbal_info_update(gimbal_t *gimbal)
     {
         rm_motor[i].rx(&rm_motor[i]);
     }
+    for (int i = 0; i < GIMBAL_CNT;i++)
+    {
+        gimbal_motor[i].rx(&gimbal_motor[i]);
+    }
     static dev_work_state_t last_motor_mode = DEV_OFFLINE;
 
     // 陀螺仪数据 (imu_wrapper返回rad/s, 原始代码使用°/s, 需转换)
