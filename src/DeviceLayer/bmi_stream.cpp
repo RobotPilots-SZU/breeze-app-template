@@ -13,7 +13,7 @@ ARM_MAT_INS EKFSrc;
 ARM_MAT_INS EKFDst;
 
 gimbal_transform_t EKFgim_trans = {
-	.arz = 0.0f,
+	.arz = 180.0f,
 	.ary = 0.0f,
 	.arx = 0.0f,
 	.trans = {0.0f},
