@@ -12,6 +12,14 @@
 Board_Tx_Pkt_t    board_tx_pkt;
 Board_Rx_Meg_t    board_rx_meg;
 
+/* can_tx_manager_send 的 NULL 回调会导致 USAGE FAULT，加个空回调代替 */
+static void board_tx_cb(const struct device *dev, int error, void *user_data)
+{
+	(void)dev;
+	(void)error;
+	(void)user_data;
+}
+
 Board_Status_t board_status = 
 {
 	.offline_cnt_max = BOARD_OFFLINE_CNT_MAX,
@@ -153,7 +161,7 @@ void Board_Tx_Pkt_01(Board_t* board)
 	pkt_01[5] |= (board->tx_pkt->gimbal_target_pkt.is_hole & 0x01) << 3;
 	
 	if (board_tx_mgr) {
-		can_tx_manager_send(board_tx_mgr, K_MSEC(10), NULL, ID_PKT_01, NULL);
+		can_tx_manager_send(board_tx_mgr, K_MSEC(10), board_tx_cb, ID_PKT_01, NULL);
 	}
 }
 
@@ -176,7 +184,7 @@ void Board_Tx_Pkt_02(Board_t* board)
 	pkt_02[7] = t4;
 	
 	if (board_tx_mgr) {
-		can_tx_manager_send(board_tx_mgr, K_MSEC(10), NULL, ID_PKT_02, NULL);
+		can_tx_manager_send(board_tx_mgr, K_MSEC(10), board_tx_cb, ID_PKT_02, NULL);
 	}
 }
 
@@ -202,7 +210,7 @@ void Board_Tx_Pkt_03(Board_t* board)
 	pkt_03[7] = board->tx_pkt->judge_shoot_pkt.allowance_max;
 	
 	if (board_tx_mgr) {
-		can_tx_manager_send(board_tx_mgr, K_MSEC(10), NULL, ID_PKT_03, NULL);
+		can_tx_manager_send(board_tx_mgr, K_MSEC(10), board_tx_cb, ID_PKT_03, NULL);
 	}
 }
 
@@ -215,7 +223,7 @@ void Board_Tx_Pkt_04(Board_t* board)
 	}
 
 	if (board_tx_mgr) {
-		can_tx_manager_send(board_tx_mgr, K_MSEC(10), NULL, ID_PKT_04, NULL);
+		can_tx_manager_send(board_tx_mgr, K_MSEC(10), board_tx_cb, ID_PKT_04, NULL);
 	}
 }
 

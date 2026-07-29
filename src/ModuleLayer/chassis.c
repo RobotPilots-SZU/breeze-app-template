@@ -267,8 +267,8 @@ static void Chassis_Target_Update(Chassis_t* chassis)
 			chassis->target.cycle_speed = -1 * 300.f * yaw_angle_err_rad * yaw_angle_err_rad * sgn(yaw_angle_err_rad);
 			chassis->target.cycle_speed = constrain(chassis->target.cycle_speed, -CYCLE_MAX_SPEED, CYCLE_MAX_SPEED);
 		}
-		chassis->target.front_speed = front_speed * cos(gimbal.info.yaw_mec_err_raw) + left_speed * sin(gimbal.info.yaw_mec_err_raw);
-		chassis->target.left_speed = left_speed * cos(gimbal.info.yaw_mec_err_raw) - front_speed * sin(gimbal.info.yaw_mec_err_raw);
+		chassis->target.front_speed = front_speed * cosf(gimbal.info.yaw_mec_err_raw) + left_speed * sinf(gimbal.info.yaw_mec_err_raw);
+		chassis->target.left_speed = left_speed * cosf(gimbal.info.yaw_mec_err_raw) - front_speed * sinf(gimbal.info.yaw_mec_err_raw);
 			
      	straight_yaw = imu_get_yaw();
 		
@@ -356,6 +356,7 @@ static void Chassis_Offline_Update(Chassis_t* chassis)
 
 	for(uint8_t i = 0;i<WHEEL_CNT;i++)
 	{
+		if(chassis->wheel[i] != NULL)
 		chassis->wheel[i]->rx(chassis->wheel[i]);
 	}
 
