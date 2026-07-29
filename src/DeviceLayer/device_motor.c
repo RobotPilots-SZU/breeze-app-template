@@ -151,7 +151,7 @@ Motor_RM_t wheel_motor[WHEEL_CNT] = {
         .tx_info = &wheel_tx_info[WHEEL_LB],
         .state = &wheel_state[WHEEL_LB],
         .ctrl = &wheel_ctrl_info[WHEEL_LB],
-        .motor = NULL, // DEVICE_DT_GET(CHASSIS_LB_NODE),
+        .motor = DEVICE_DT_GET(CHASSIS_LB_NODE),
         .single_init = RM_Motor_Init,
     },
     [WHEEL_RF] = {
@@ -159,7 +159,7 @@ Motor_RM_t wheel_motor[WHEEL_CNT] = {
         .tx_info = &wheel_tx_info[WHEEL_RF],
         .state = &wheel_state[WHEEL_RF],
         .ctrl = &wheel_ctrl_info[WHEEL_RF],
-        .motor = NULL, // DEVICE_DT_GET(CHASSIS_RF_NODE),
+        .motor = DEVICE_DT_GET(CHASSIS_RF_NODE),
         .single_init = RM_Motor_Init,
     },
     [WHEEL_RB] = {
@@ -167,7 +167,7 @@ Motor_RM_t wheel_motor[WHEEL_CNT] = {
         .tx_info = &wheel_tx_info[WHEEL_RB],
         .state = &wheel_state[WHEEL_RB],
         .ctrl = &wheel_ctrl_info[WHEEL_RB],
-        .motor = NULL, // DEVICE_DT_GET(CHASSIS_RB_NODE),
+        .motor = DEVICE_DT_GET(CHASSIS_RB_NODE),
         .single_init = RM_Motor_Init,
     },
 
@@ -181,16 +181,16 @@ int Motor_Init()
 
     for (int i = 0; i < WHEEL_CNT; i++)
     {
-        // if (!wheel_motor[i].motor)
-        // {
-        //     LOG_ERR("Motor %d not found!", i);
-        //     return -ENODEV;
-        // }
-        // if (!device_is_ready(wheel_motor[i].motor))
-        // {
-        //     LOG_ERR("Motor %d is not ready!", i);
-        //     return -ENODEV;
-        // }
+        if (!wheel_motor[i].motor)
+        {
+            LOG_ERR("Motor %d not found!", i);
+            return -ENODEV;
+        }
+        if (!device_is_ready(wheel_motor[i].motor))
+        {
+            LOG_ERR("Motor %d is not ready!", i);
+            return -ENODEV;
+        }
         wheel_motor[i].single_init(&wheel_motor[i]);
     }
 

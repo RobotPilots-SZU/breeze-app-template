@@ -63,7 +63,7 @@
 
     chassis_LB:motor2{
         compatible = "rp,dji-can-motor";
-        status = "disabled";
+        status = "okay";
         can-bus = <&fdcan1>;
         rx-manager = <&can_rx_mgr1>;
         tx-manager = <&can_tx_mgr1>;
@@ -79,7 +79,7 @@
 
     chassis_RF:motor3{
         compatible = "rp,dji-can-motor";
-        status = "disabled";
+        status = "okay";
         can-bus = <&fdcan1>;
         rx-manager = <&can_rx_mgr1>;
         tx-manager = <&can_tx_mgr1>;
@@ -95,7 +95,7 @@
 
     chassis_RB:motor4{
         compatible = "rp,dji-can-motor";
-        status = "disabled";
+        status = "okay";
         can-bus = <&fdcan1>;
         rx-manager = <&can_rx_mgr1>;
         tx-manager = <&can_tx_mgr1>;
