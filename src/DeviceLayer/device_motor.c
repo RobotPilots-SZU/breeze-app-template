@@ -235,7 +235,6 @@ void Motor_Heartbeat()
 {
     for (int i = 0; i < WHEEL_CNT; i++)
     {
-        if(wheel_motor[i].motor!=NULL)
         wheel_motor[i].single_heart_beat(&wheel_motor[i]);
     }
 }
