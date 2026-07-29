@@ -62,9 +62,6 @@ extern "C" void StartMonitorTask(void *arg1, void *arg2, void *arg3)
             (float)wheel_motor[0].ctrl->speed_ctrl->target,
             (float)wheel_motor[0].ctrl->speed_ctrl->err,
             (float)wheel_motor[0].tx_info->torque,
-            (float)wheel_motor[1].ctrl->speed_ctrl->target,
-            (float)wheel_motor[1].ctrl->speed_ctrl->err,
-            (float)wheel_motor[1].tx_info->torque,
         };
         SEGGER_RTT_Write(RTT_CH_VOFA_1, vofa_data, sizeof(vofa_data));
         SEGGER_RTT_Write(RTT_CH_VOFA_1, vofa_tail, sizeof(vofa_tail));

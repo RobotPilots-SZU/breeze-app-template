@@ -28,8 +28,11 @@ static void Encoder_Sum_Cal(Motor_RM_t *motor);
   */
 static void Motor_Set_Torque(Motor_RM_t *motor)
 {
-	Torque_to_Raw_Current(motor);
-	motor_torque_control(motor->motor, motor->tx_info->torque_current_raw);
+	if(motor->motor != NULL)
+	{
+		Torque_to_Raw_Current(motor);
+		motor_torque_control(motor->motor, motor->tx_info->torque_current_raw);
+	}
 }
 
 
@@ -41,7 +44,6 @@ static void Motor_Set_Torque(Motor_RM_t *motor)
 static void Single_Motor_Sleep(Motor_RM_t *motor)
 {
 	motor->tx_info->torque = 0;
-	motor_torque_control(motor->motor, motor->tx_info->torque);
 }
 
 /**
@@ -51,8 +53,11 @@ static void Single_Motor_Sleep(Motor_RM_t *motor)
  */
 static void rm_motor_heart_beat(Motor_RM_t *rm_motor)
 {
-	Motor_RM_State_t *motor_state = rm_motor->state;
-	motor_state->status = get_motor_heartbeat_status(rm_motor->motor) ? DEV_ONLINE : DEV_OFFLINE;
+	if (rm_motor->motor != NULL)
+	{
+		Motor_RM_State_t *motor_state = rm_motor->state;
+		motor_state->status = get_motor_heartbeat_status(rm_motor->motor) ? DEV_ONLINE : DEV_OFFLINE;
+	}
 }
 
 /**
@@ -60,17 +65,21 @@ static void rm_motor_heart_beat(Motor_RM_t *rm_motor)
  */
 static void rm_motor_update(Motor_RM_t *rm_motor)
 {
-	const smotor_receive_data_t *dev_rx_info = get_motor_rxdata(rm_motor->motor);
-	Motor_RM_Rx_Info_t *motor_info = rm_motor->rx_info;
+	if(rm_motor->motor != NULL)
+	{
+		const smotor_receive_data_t *dev_rx_info = get_motor_rxdata(rm_motor->motor);
+		Motor_RM_Rx_Info_t *motor_info = rm_motor->rx_info;
 
-	motor_info->encoder = dev_rx_info->encoder;
-	Encoder_Sum_Cal(rm_motor);
-	Encoder_to_Motor_Angle(rm_motor);
-	motor_info->encoder_speed = dev_rx_info->speed;
-	motor_info->speed = RPM_to_Rads(rm_motor);
-	motor_info->torque_current_raw = dev_rx_info->iq;
-	Raw_Current_to_Torque(rm_motor);
-	motor_info->temperature = dev_rx_info->specific_data.m3508.temp;
+		motor_info->encoder = dev_rx_info->encoder;
+		Encoder_Sum_Cal(rm_motor);
+		Encoder_to_Motor_Angle(rm_motor);
+		motor_info->encoder_speed = dev_rx_info->speed;
+		motor_info->speed = RPM_to_Rads(rm_motor);
+		motor_info->torque_current_raw = dev_rx_info->iq;
+		Raw_Current_to_Torque(rm_motor);
+		motor_info->temperature = dev_rx_info->specific_data.m3508.temp;
+	}
+	
 }
 
 /**

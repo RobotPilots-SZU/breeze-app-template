@@ -141,7 +141,7 @@ Motor_RM_t wheel_motor[WHEEL_CNT] = {
     [WHEEL_LF] = {
         .rx_info = &wheel_rx_info[WHEEL_LF],
         .tx_info = &wheel_tx_info[WHEEL_LF],
-        .state   = &wheel_state[WHEEL_LF],
+        .state = &wheel_state[WHEEL_LF],
         .ctrl = &wheel_ctrl_info[WHEEL_LF],
         .motor = DEVICE_DT_GET(CHASSIS_LF_NODE),
         .single_init = RM_Motor_Init,
@@ -149,25 +149,25 @@ Motor_RM_t wheel_motor[WHEEL_CNT] = {
     [WHEEL_LB] = {
         .rx_info = &wheel_rx_info[WHEEL_LB],
         .tx_info = &wheel_tx_info[WHEEL_LB],
-        .state   = &wheel_state[WHEEL_LB],
+        .state = &wheel_state[WHEEL_LB],
         .ctrl = &wheel_ctrl_info[WHEEL_LB],
-        .motor = DEVICE_DT_GET(CHASSIS_LB_NODE),
+        .motor = NULL, // DEVICE_DT_GET(CHASSIS_LB_NODE),
         .single_init = RM_Motor_Init,
     },
     [WHEEL_RF] = {
         .rx_info = &wheel_rx_info[WHEEL_RF],
         .tx_info = &wheel_tx_info[WHEEL_RF],
-        .state   = &wheel_state[WHEEL_RF],
+        .state = &wheel_state[WHEEL_RF],
         .ctrl = &wheel_ctrl_info[WHEEL_RF],
-        .motor = DEVICE_DT_GET(CHASSIS_RF_NODE),
+        .motor = NULL, // DEVICE_DT_GET(CHASSIS_RF_NODE),
         .single_init = RM_Motor_Init,
     },
     [WHEEL_RB] = {
         .rx_info = &wheel_rx_info[WHEEL_RB],
         .tx_info = &wheel_tx_info[WHEEL_RB],
-        .state   = &wheel_state[WHEEL_RB],
+        .state = &wheel_state[WHEEL_RB],
         .ctrl = &wheel_ctrl_info[WHEEL_RB],
-        .motor = DEVICE_DT_GET(CHASSIS_RB_NODE),
+        .motor = NULL, // DEVICE_DT_GET(CHASSIS_RB_NODE),
         .single_init = RM_Motor_Init,
     },
 
@@ -181,16 +181,16 @@ int Motor_Init()
 
     for (int i = 0; i < WHEEL_CNT; i++)
     {
-        if (!wheel_motor[i].motor)
-        {
-            LOG_ERR("Motor %d not found!", i);
-            return -ENODEV;
-        }
-        if (!device_is_ready(wheel_motor[i].motor))
-        {
-            LOG_ERR("Motor %d is not ready!", i);
-            return -ENODEV;
-        }
+        // if (!wheel_motor[i].motor)
+        // {
+        //     LOG_ERR("Motor %d not found!", i);
+        //     return -ENODEV;
+        // }
+        // if (!device_is_ready(wheel_motor[i].motor))
+        // {
+        //     LOG_ERR("Motor %d is not ready!", i);
+        //     return -ENODEV;
+        // }
         wheel_motor[i].single_init(&wheel_motor[i]);
     }
 
@@ -213,6 +213,9 @@ int Motor_Init()
 
     for (int i = 0; i < WHEEL_CNT; i++)
     {
+        if (wheel_motor[i].motor == NULL)
+        continue;
+
         if (register_motor(wheel_motor[i].motor) < 0) // 这是通用的多电机注册函数
         {
             LOG_ERR("Failed to register motor %d", i);
@@ -232,6 +235,7 @@ void Motor_Heartbeat()
 {
     for (int i = 0; i < WHEEL_CNT; i++)
     {
+        if(wheel_motor[i].motor!=NULL)
         wheel_motor[i].single_heart_beat(&wheel_motor[i]);
     }
 }
