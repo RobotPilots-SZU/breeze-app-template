@@ -110,6 +110,18 @@
     };
 };
 
+&fdcan1 {
+    bosch,mram-cfg = <0x0 1 0 8 0 0 8 8>;
+};
+
+&fdcan2 {
+    bosch,mram-cfg = <0x600 1 0 8 0 0 8 8>;
+};
+
+&fdcan3 {
+    bosch,mram-cfg = <0xc00 1 0 8 0 0 8 8>;
+};
+
 / {
     aliases {
         watchdog0 = &iwdg;  /* 将 watchdog0 指向 IWDG 硬件 */
