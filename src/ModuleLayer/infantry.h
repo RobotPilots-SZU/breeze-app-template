@@ -60,9 +60,10 @@ typedef struct{
 	uint8_t vision_flag;
 	bool    broken_flag;
 
-//  bool    U_turn_flag;
-//	bool    L_turn_flag;
-//	bool    R_turn_flag;
+	bool cap_use_flag;
+	//  bool    U_turn_flag;
+	//	bool    L_turn_flag;
+	//	bool    R_turn_flag;
 	
 	bool    chassis_off;
 	bool    gimbal_off;
@@ -77,12 +78,14 @@ typedef struct{
 
 typedef struct Infantry_Struct_t{
 	Infantry_Ctrl_e          ctrl;
-    Infantry_Mode_e          mode;
+	Infantry_Ctrl_e 		last_ctrl;
+	Infantry_Mode_e          mode;
 	Infantry_Mode_e          last_mode;
 	Infantry_Flag_t          flag;
 
 	void (* init)(struct Infantry_Struct_t* infantry);
     void (* work)(struct Infantry_Struct_t* infantry);
+	void (*heart_beat)(struct Infantry_Struct_t *infantry);
 
 }Infantry_t;
 
