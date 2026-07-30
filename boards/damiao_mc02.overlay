@@ -111,15 +111,15 @@
 };
 
 &fdcan1 {
-    bosch,mram-cfg = <0x0 1 0 8 0 0 8 8>;
+    bosch,mram-cfg = <0x0 1 0 22 0 0 22 22>;
 };
 
 &fdcan2 {
-    bosch,mram-cfg = <0x600 1 0 8 0 0 8 8>;
+    bosch,mram-cfg = <0xd14 1 0 22 0 0 22 22>;
 };
 
 &fdcan3 {
-    bosch,mram-cfg = <0xc00 1 0 8 0 0 8 8>;
+    bosch,mram-cfg = <0x1a28 1 0 22 0 0 22 22>;
 };
 
 / {
