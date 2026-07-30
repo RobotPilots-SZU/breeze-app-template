@@ -16,32 +16,31 @@ static void Gimbal_Offline_Process(Gimbal_t* gimbal);
 static void Gimbal_Cmd_Transmit(Gimbal_t* gimbal);
 static void Gimbal_Work(Gimbal_t* gimbal);
 
-
 Gimbal_t gimbal = {
-  .mode = G_SLEEP,
-  .gimbal_reset_flag= false,
-		
+	.mode = G_SLEEP,
+	.gimbal_reset_flag = false,
+
 	.config = {
-	  .yaw_zero[FRONT] = YAW_MEC_ZERO_ANGLE,
-	  .yaw_zero[BEHIND] = 2.425084248,
-	  .rc_yaw_imu_step = 0.2f,
-	  .rc_yaw_mec_step = 0.02f,
-	  .rc_pitch_mec_step = 0.002f,
-	  .rc_pitch_imu_step = 0.05f,
-	  .key_yaw_mec_step = 0.003f,
-	  .key_pitch_mec_step = 0.0003f,
-	  .key_yaw_imu_step = 0.003f,
-	  .key_pitch_imu_step = 0.003f,
-	  
+		.yaw_zero[FRONT] = YAW_MEC_ZERO_ANGLE,
+		.yaw_zero[BEHIND] = YAW_MEC_ZERO_ANGLE + PI,
+		.rc_yaw_imu_step = 0.2f,
+		.rc_yaw_mec_step = 0.02f,
+		.rc_pitch_mec_step = 0.002f,
+		.rc_pitch_imu_step = 0.05f,
+		.key_yaw_mec_step = 0.003f,
+		.key_pitch_mec_step = 0.0003f,
+		.key_yaw_imu_step = 0.003f,
+		.key_pitch_imu_step = 0.003f,
+
 	},
-	
+
 	.init = Gimbal_Init,
 };
-
 
 static void Gimbal_Init(Gimbal_t* gimbal)
 {
 	gimbal->work = Gimbal_Work;
+	gimbal->heart_beat = Gimbal_Offline_Update;
 }
 
 /**
@@ -145,7 +144,7 @@ static void Gimbal_Init_Process(Gimbal_t* gimbal)
 ////		gimbal->gimbal_reset_flag = true;
 ////		reset_tick = 0;
 //	}
-	else if(reset_tick >= 4000)
+	else if(reset_tick >= 8000)
 	{
 		gimbal->gimbal_reset_flag = true;
 		reset_tick = 0;
@@ -183,37 +182,56 @@ static void  Gimbal_Slave_Update(Gimbal_t* gimbal)
 		gimbal->target.pitch_mec_tar = PITCH_MEC_ZERO_ANGLE;
 	
 	}
-	else{
-		if(gimbal->info.yaw_mec_err_raw <= PI/2)
-		{
-			gimbal->target.yaw_mec_tar = gimbal->config.yaw_zero[FRONT];
-		}
-		else{
-		  gimbal->target.yaw_mec_tar = gimbal->config.yaw_zero[BEHIND];
-		
-		}
-	
-		if(infantry.mode == I_HOLE && board.tx_pkt->gimbal_target_pkt.is_hole == 1)
+	else
+	{
+		// 过洞处理
+		if (board.rx_meg->state_meg.is_down != 2 || infantry.mode == I_HOLE)
 		{
 			gimbal->target.yaw_mec_tar = YAW_MEC_ZERO_ANGLE;
-		    gimbal->target.pitch_mec_tar = PITCH_MEC_ZERO_ANGLE;
+			gimbal->target.pitch_mec_tar = PITCH_MEC_ZERO_ANGLE + 5 / 180 * PI;
 		}
-		else{
-		  if(infantry.ctrl == RC_CTRL)
-		  {
-			  gimbal->target.pitch_mec_tar += rc_sensor->info->ch1/660.f * gimbal->config.rc_pitch_mec_step;
-		  }
-		  else if(infantry.ctrl == KEY_CTRL)
-		  {
-			  gimbal->target.pitch_mec_tar += rc_sensor->info->mouse_y * gimbal->config.key_pitch_mec_step;
-		  }
-		
+		// 掉头处理
+		else if (infantry.flag.U_turn_flag.value == true)
+		{
+			if (infantry.flag.U_turn_flag.form == RISING)
+			{
+				if (gimbal->target.yaw_mec_tar == gimbal->config.yaw_zero[FRONT])
+				{
+					gimbal->target.yaw_mec_tar = gimbal->config.yaw_zero[BEHIND];
+				}
+				else if (gimbal->target.yaw_mec_tar == gimbal->config.yaw_zero[BEHIND])
+				{
+					gimbal->target.yaw_mec_tar = gimbal->config.yaw_zero[FRONT];
+				}
+			}
+
+			if (abs(motor_half_cycle(gimbal->target.yaw_mec_tar - board.rx_meg->gimbal_meg.yaw_mec, 2 * PI)) <= 3.f / 180.f * PI)
+			{
+				infantry.flag.U_turn_flag.value = false;
+			}
+		}else
+		{
+			if(fabsf(gimbal->info.yaw_mec_err_raw) <= PI/2)
+			{
+			gimbal->target.yaw_mec_tar = gimbal->config.yaw_zero[FRONT];
+			}
+			else
+			{
+			gimbal->target.yaw_mec_tar = gimbal->config.yaw_zero[BEHIND];			
+			}
+
+			if(infantry.ctrl == RC_CTRL)
+			{
+				gimbal->target.pitch_mec_tar += rc_sensor->info->ch1/660.f * gimbal->config.rc_pitch_mec_step;
+			}
+			else if(infantry.ctrl == KEY_CTRL)
+			{
+				gimbal->target.pitch_mec_tar += rc_sensor->info->mouse_y * gimbal->config.key_pitch_mec_step;
+			}
 		}
 		
 		gimbal->target.pitch_mec_tar = motor_half_cycle(gimbal->target.pitch_mec_tar,2.f*PI);
-		
-		gimbal->target.pitch_mec_tar = constrain(gimbal->target.pitch_mec_tar,PITCH_MEC_MIN_ANGLE,PITCH_MEC_MAX_ANGLE);
-		
+		gimbal->target.pitch_mec_tar = constrain(gimbal->target.pitch_mec_tar,PITCH_MEC_MIN_ANGLE,PITCH_MEC_MAX_ANGLE);	
 	}
 		gimbal->target.yaw_imu_tar = gimbal->info.yaw_imu;
 		gimbal->target.pitch_imu_tar = gimbal->info.pitch_imu;
@@ -227,58 +245,74 @@ static void  Gimbal_Boss_Update(Gimbal_t* gimbal)
 	// TODO: vision  尚未迁移，待移植后取消注释
 	/*
 	//视觉模式上板直接用视觉包目标值，下板需要实时更新目标值防止退出视觉时目标值衔接错误导致头动
-	if(vision.mode != V_NORMAL && board.rx_meg->state_meg.vision_state == true && board.rx_meg->vision_meg.is_find_target == true)  
+	if(vision.mode != V_NORMAL && board.rx_meg->state_meg.vision_state == true && board.rx_meg->vision_meg.is_find_target == true)
 	{
 		gimbal->target.yaw_imu_tar = board.rx_meg->vision_meg.vision_yaw_tar;
 		gimbal->target.pitch_imu_tar = board.rx_meg->vision_meg.vision_pitch_tar;
+	}else*/
+	//掉头处理
+  	if(infantry.flag.U_turn_flag.value == true)
+	{
+		if(infantry.flag.U_turn_flag.form == RISING)
+		{
+			gimbal->target.yaw_imu_tar += 180.f;
+			gimbal->target.yaw_imu_tar = motor_half_cycle(gimbal->target.yaw_imu_tar,360.f);
+		}
+		if(fabsf(motor_half_cycle(gimbal->target.yaw_imu_tar - board.rx_meg->gimbal_meg.yaw_imu,360.f)) <= 3.f)
+		{
+			infantry.flag.U_turn_flag.value = false;
+		}
 	}
 	else
-	*/
 	{
-		if(infantry.ctrl == RC_CTRL)
 		{
-			gimbal->target.yaw_imu_tar -= rc_sensor->info->ch0/660.f * gimbal->config.rc_yaw_imu_step;
-			gimbal->target.pitch_imu_tar += rc_sensor->info->ch1/660.f * gimbal->config.rc_pitch_imu_step;
+			if(infantry.ctrl == RC_CTRL)
+			{
+				gimbal->target.yaw_imu_tar -= rc_sensor->info->ch0/660.f * gimbal->config.rc_yaw_imu_step;
+				gimbal->target.pitch_imu_tar += rc_sensor->info->ch1/660.f * gimbal->config.rc_pitch_imu_step;
+			}
+			else if(infantry.ctrl == KEY_CTRL)
+			{
+				gimbal->target.yaw_imu_tar -= rc_sensor->info->mouse_x * gimbal->config.key_yaw_imu_step;
+				gimbal->target.pitch_imu_tar += rc_sensor->info->mouse_y * gimbal->config.key_pitch_imu_step;
+			}
 		}
-		else if(infantry.ctrl == KEY_CTRL)
-		{
-			gimbal->target.yaw_imu_tar -= rc_sensor->info->mouse_x * gimbal->config.key_yaw_imu_step;
-			gimbal->target.pitch_imu_tar += rc_sensor->info->mouse_y * gimbal->config.key_pitch_imu_step;
-		}
-	}
-	
-	gimbal->target.yaw_imu_tar = motor_half_cycle(gimbal->target.yaw_imu_tar,360.f);
-	gimbal->target.pitch_imu_tar = constrain(gimbal->target.pitch_imu_tar,PITCH_IMU_MIN_ANGLE,PITCH_IMU_MAX_ANGLE);
-	
-	if(infantry.flag.chassis_reset.value == true)
-	{
-		gimbal->target.yaw_mec_tar = gimbal->config.yaw_zero[FRONT];
-		if(fabsf(motor_half_cycle(gimbal->target.yaw_mec_tar - gimbal->info.yaw_mec,2 * PI)) <= 4.f/180.f * PI)
-		{
- 		     infantry.flag.chassis_reset.value = false;
-		}
-
-	}
-	else{
-		if(fabsf(gimbal->info.yaw_mec_err_raw) <= PI/2)
+		
+		gimbal->target.yaw_imu_tar = motor_half_cycle(gimbal->target.yaw_imu_tar,360.f);
+		gimbal->target.pitch_imu_tar = constrain(gimbal->target.pitch_imu_tar,PITCH_IMU_MIN_ANGLE,PITCH_IMU_MAX_ANGLE);
+		
+		if(infantry.flag.chassis_reset.value == true)
 		{
 			gimbal->target.yaw_mec_tar = gimbal->config.yaw_zero[FRONT];
+			if(fabsf(motor_half_cycle(gimbal->target.yaw_mec_tar - gimbal->info.yaw_mec,2 * PI)) <= 4.f/180.f * PI)
+			{
+				infantry.flag.chassis_reset.value = false;
+			}
+
 		}
 		else{
-			gimbal->target.yaw_mec_tar = gimbal->config.yaw_zero[BEHIND];
+			if(fabsf(gimbal->info.yaw_mec_err_raw) <= PI/2)
+			{
+				gimbal->target.yaw_mec_tar = gimbal->config.yaw_zero[FRONT];
+			}
+			else{
+				gimbal->target.yaw_mec_tar = gimbal->config.yaw_zero[BEHIND];
+			}
 		}
-	}
-//	gimbal->target.yaw_mec_tar = gimbal->info.yaw_mec;
+	//	gimbal->target.yaw_mec_tar = gimbal->info.yaw_mec;
 
-	gimbal->target.pitch_mec_tar = gimbal->info.pitch_mec;
-//	gimbal->info.yaw_mec_err_act = motor_half_cycle(gimbal->info.yaw_mec - gimbal->target.yaw_mec_tar,2*PI);
+		gimbal->target.pitch_mec_tar = gimbal->info.pitch_mec;
+	//	gimbal->info.yaw_mec_err_act = motor_half_cycle(gimbal->info.yaw_mec - gimbal->target.yaw_mec_tar,2*PI);
+	}
 }
 
 
 
 static void Gimbal_Offline_Update(Gimbal_t* gimbal)
 {
-	
+	gimbal->state.yaw_heart = board.rx_meg->state_meg.yaw_motor_state;
+	gimbal->state.pitch_heart = board.rx_meg->state_meg.pitch_motor_state;
+	gimbal->state.left_heart = board.rx_meg->state_meg.height_motor_state;
 }
 
 /**
@@ -315,7 +349,8 @@ static void Gimbal_Cmd_Transmit(Gimbal_t* gimbal)
 	{
 		gimbal->info.yaw_mec_err_act = 0;	//头特殊转时底盘不跟
 	}
-	else{
+	else
+	{
 		#if GIMBAL_SWITCH == 0
 		  gimbal->info.yaw_mec_err_act = motor_half_cycle(gimbal->info.yaw_imu - gimbal->target.yaw_imu_tar,360.f) / 180.f * PI;
 		#else 
