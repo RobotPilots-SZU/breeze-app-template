@@ -237,7 +237,7 @@ void Board_Rx_Meg_01(Board_t* board,uint8_t* rxbuf)
 	board->rx_meg->state_meg.l_fric_state= (rxbuf[0] >> 4) & 0x01;
 	board->rx_meg->state_meg.dial_motor_state= (rxbuf[0] >> 5) & 0x01;
 	board->rx_meg->state_meg.vision_state= (rxbuf[0] >> 6) & 0x01;
-	board->rx_meg->state_meg.is_down= (rxbuf[0] >> 7) & 0x01;
+	board->rx_meg->state_meg.is_down= rxbuf[1];
 	
 	uint16_t t1 = ((uint16_t)rxbuf[2] << 8) | rxbuf[3];  
     uint16_t t2 = ((uint16_t)rxbuf[4] << 8) | rxbuf[5];
