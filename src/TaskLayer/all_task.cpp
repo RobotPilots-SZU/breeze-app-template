@@ -39,6 +39,7 @@ extern "C" void StartHeartbeatTask(void *arg1, void *arg2, void *arg3)
     {
         Motor_Heartbeat();
         board.heartbeat(&board);
+        judge.heartbeat(&judge);
         /* 喂狗 */
         IWDG_Feed(iwdg_dev, IWDG_Channel_ID);
         

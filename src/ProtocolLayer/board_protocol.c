@@ -1,13 +1,11 @@
 #include "board_protocol.h"
-// TODO: Judge模块尚未迁移，待移植后取消注释
-// #include "judge.h"
 #include <string.h>
 #include <stdbool.h>
 #include <zephyr/kernel.h>
 #include <drivers/can_tx_manager.h>
 #include <drivers/can_rx_manager.h>
 #include "rp_math.h"
-
+#include "judge.h"
 
 Board_Tx_Pkt_t    board_tx_pkt;
 Board_Rx_Meg_t    board_rx_meg;
@@ -194,11 +192,8 @@ void Board_Tx_Pkt_03(Board_t* board)
 	
 	t1 = float_to_uint(board->tx_pkt->judge_shoot_pkt.shoot_speed,-50.f,50.f,16);
 	t2 = float_to_uint(board->tx_pkt->judge_shoot_pkt.shoot_freq,-50.f,50.f,16);
-	
-	// TODO: Judge模块尚未迁移，待移植后取消注释
-	// board->tx_pkt->judge_shoot_pkt.shoot_heat_err = judge.pkt->shooter_barrel_heat_limit - judge.pkt->shooter_17mm_1_barrel_heat;
-	// board->tx_pkt->judge_shoot_pkt.allowance_max = judge.pkt->projectile_allowance_17mm;
 
+	board->tx_pkt->judge_shoot_pkt.shoot_heat_err = judge.pkt->shooter_barrel_heat_limit - judge.pkt->shooter_17mm_1_barrel_heat;
 	
 	pkt_03[0] = t1>>8;
 	pkt_03[1] = t1;
