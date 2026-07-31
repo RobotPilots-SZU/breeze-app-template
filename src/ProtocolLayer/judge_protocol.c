@@ -28,6 +28,7 @@ void USART1_rxDataHandler(const struct device *dev, void *user_data)
 	uart_irq_update(dev);
 	uint8_t byte;
 
+	LOG_INF("into usart1 date");
 	while (uart_irq_rx_ready(dev) && uart_fifo_read(dev, &byte, 1) > 0)
 	{
 		//将数据填入
@@ -65,6 +66,7 @@ void USART1_rxDataHandler(const struct device *dev, void *user_data)
 			if (Verify_CRC8_Check_Sum(rx_buf, 5) && Verify_CRC16_Check_Sum(rx_buf, frame_length))
 			{
 				memcpy(&drv_judge_info.cmd_id, rx_buf + 5, 2);
+				LOG_INF("drv_judge_info.cmd_id%d", drv_judge_info.cmd_id);
 				Judge_Data_Update(drv_judge_info.cmd_id, rx_buf + 7);
 				memcpy(&drv_judge_info.frame_tail, rx_buf + 5 + 2 + drv_judge_info.frame_header->data_length, 2);
 			}
@@ -98,7 +100,12 @@ int Judge_Init(Judge_t *judge)
 		return -1;
 	}
 	/* 注册中断回调 */
-	uart_irq_callback_user_data_set(usart1, USART1_rxDataHandler, NULL);
+	int ret = uart_irq_callback_user_data_set(usart1, USART1_rxDataHandler, NULL);
+	if ( ret != 0)
+	{
+		return ret;
+	}
+	
 
 	/* 使能接收中断 */
 	uart_irq_rx_enable(usart1);
