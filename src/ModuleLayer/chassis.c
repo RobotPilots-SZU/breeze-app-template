@@ -9,7 +9,7 @@
 #include "rp_config.h"
 #include "board_protocol.h"
 #include "gimbal.h"
-// #include "judge.h"
+#include "judge.h"
 // #include "cap.h"
 
 
@@ -54,16 +54,17 @@ Chassis_t chassis = {
 		{1.4268163740611692, 0.0004488821106870444, 8.492604098272384e-05, 1.7818822187359053e-06, 1.3769792187274362e-07, 3.5482352783775733e-07},
 		{1.316759451137222, -0.0003859926122313794, -0.0001505750547614686, 1.561834267598007e-06, 1.6344718643622346e-07, 4.450747190731389e-07},
 		{1.3732605217163856, -0.0005512718723215252, 0.00016888118401289773, 1.6267287913987835e-06, 1.535613047156326e-07, 3.9997112666134343e-07},
-		{1.2153953585472708, 0.0005208459563644549, -0.0011565571647848352, 1.2295486958182895e-06, 1.5197943464022477e-07, 8.38544692326543e-07},
-
+		{1.3732605217163856, -0.0005512718723215252, 0.00016888118401289773, 1.6267287913987835e-06, 1.535613047156326e-07, 3.9997112666134343e-07},
+		//{1.2153953585472708,0.0005208459563644549,-0.0011565571647848352,1.2295486958182895e-06,1.5197943464022477e-07,8.38544692326543e-07},
 	},
-
+	.burst_flag = false,
 	.init = Chassis_Init,
 };
 
 static void Chassis_Init(Chassis_t* chassis)
 {
 	chassis->work = Chassis_Work;
+	chassis->heart_beat = Chassis_Offline_Update;
 }
 
 /**
@@ -118,6 +119,7 @@ static void Chassis_Status_Update(Chassis_t* chassis)
 	if(infantry.flag.chassis_off == true)           //底盘掉电就底盘睡眠，头能动
 	{
 		chassis->mode = C_SLEEP;
+		infantry.flag.turn_flag = false; // 退出小陀螺
 	}
 	
 }
@@ -173,12 +175,12 @@ static void __attribute__((unused)) Chassis_Key_Input(Chassis_t *chassis)
 	
 }
 
-
+float front_speed,left_speed,cycle_speed;
 static void Chassis_Target_Update(Chassis_t* chassis)
 {
 
 	float yaw_angle_err_rad = gimbal.info.yaw_mec_err_act;
-	float front_speed,left_speed,cycle_speed;
+	
 	static float straight_yaw = 0;
 	
 	static bool last_turn = false;
@@ -196,9 +198,9 @@ static void Chassis_Target_Update(Chassis_t* chassis)
 	
 	}
 	else{
-		front_speed = (float)now_front_cnt/ KEY_W_CNT_MAX* FRONT_MAX_SPEED;
+		front_speed = -1 * (float)now_front_cnt / KEY_W_CNT_MAX * FRONT_MAX_SPEED;
 		left_speed = -(float)now_left_cnt/ KEY_A_CNT_MAX* LEFT_MAX_SPEED;
-		cycle_speed = rc_sensor->info->mouse_vy *0.0001;
+		cycle_speed = rc_sensor->info->mouse_vx;
 		cycle_speed = constrain(cycle_speed,-CYCLE_MAX_SPEED,CYCLE_MAX_SPEED);
 	}
 	
@@ -219,21 +221,30 @@ static void Chassis_Target_Update(Chassis_t* chassis)
 
 	break;
 		
-	case C_BOSS:	
-		
+	case C_BOSS:
+		if (fabsf(gimbal.info.yaw_mec_err_raw) > PI / 2) // 掉头反着开
+		{
+			front_speed *= -1.f;
+			left_speed *= -1.f;
+		}
 		chassis->target.front_speed = front_speed;
 		chassis->target.left_speed = left_speed;
 	    chassis->target.cycle_speed = cycle_speed;
-		
-		if(fabsf(chassis->target.front_speed) >=27 && fabsf(chassis->target.cycle_speed) <= 0.1f)
+
+		// 限制yaw的速度，防止追随不及时卡位
+		if (board.rx_meg->state_meg.is_down != 2 && board.rx_meg->state_meg.is_down != 0)
 		{
-			chassis->target.cycle_speed = -motor_half_cycle(straight_yaw - imu_get_yaw(), 360.f) * 1.5f;
-			chassis->target.cycle_speed = constrain(chassis->target.cycle_speed,-20.f,20.f);
+			chassis->target.cycle_speed = constrain(chassis->target.cycle_speed, -5.f, 5.f);
 		}
-		else
-		{
-			straight_yaw = imu_get_yaw();
-		}
+		// if(fabsf(chassis->target.front_speed) >=27 && fabsf(chassis->target.cycle_speed) <= 0.1f)
+		// {
+		// 	chassis->target.cycle_speed = -motor_half_cycle(straight_yaw - imu_get_yaw(), 360.f) * 1.5f;
+		// 	chassis->target.cycle_speed = constrain(chassis->target.cycle_speed,-20.f,20.f);
+		// }
+		// else
+		// {
+		// 	straight_yaw = imu_get_yaw();
+		// }
 		
 	break;
 		
@@ -292,30 +303,35 @@ static void Chassis_Inverse_Calculate(Chassis_t* chassis)
 	float front = chassis->target.front_speed;
 	float left = chassis->target.left_speed;
 	float cycle = chassis->target.cycle_speed;
-	
-	float speed_sum;
-	float K;
-	
-	speed_sum = abs(front) + abs(left) + abs(cycle);
-	
-	if(speed_sum > CHASSIS_MAX_SPEED)
+
+	float trans = fabs(front) + fabs(left);
+	float rotate = fabs(cycle);
+	float total = trans + rotate;
+
+	if (total > CHASSIS_MAX_SPEED)
 	{
-		K = (float)(CHASSIS_MAX_SPEED - abs(cycle)) / (float)(speed_sum - abs(cycle));
-	}
-	else 
-	{
-		K = 1.f;
+		float rotate_limit = CHASSIS_MAX_SPEED * 0.6f;
+
+		if (rotate > rotate_limit)
+		{
+			cycle *= (float)rotate_limit / rotate;
+		}
+
+		float remain = CHASSIS_MAX_SPEED - fabs(cycle);
+
+		float k = (float)remain / trans;
+
+		if (k < 1)
+		{
+			front *= k;
+			left *= k;
+		}
 	}
 
-	front *= K;
-	left *= K;
-//	cycle *= K;
-	
-	chassis->target.motor_speed[WHEEL_LF]  = - front + left + cycle; 
-	chassis->target.motor_speed[WHEEL_LB]  = - front - left + cycle;
-	chassis->target.motor_speed[WHEEL_RB]  =   front - left + cycle; 
-	chassis->target.motor_speed[WHEEL_RF]  =   front + left + cycle; 
-	
+	chassis->target.motor_speed[WHEEL_LF] = -front + left + cycle;
+	chassis->target.motor_speed[WHEEL_LB] = -front - left + cycle;
+	chassis->target.motor_speed[WHEEL_RB] = front - left + cycle;
+	chassis->target.motor_speed[WHEEL_RF] = front + left + cycle;
 }
 
 /**
@@ -329,19 +345,18 @@ static void Chassis_Positive_Calculate(Chassis_t* chassis)
 	float speed_lf = chassis->wheel[WHEEL_LF]->rx_info->speed;
 	float speed_lb = chassis->wheel[WHEEL_LB]->rx_info->speed;
 	
-	//float yaw_angle_err_rad = gimbal.info.yaw_mec_err_act;
+	float yaw_angle_err_rad = gimbal.info.yaw_mec_err_act;
 	
 	chassis->measure.front_speed = (- speed_lf - speed_lb + speed_rb + speed_rf)/4.f;
 	chassis->measure.left_speed = (speed_lf - speed_lb - speed_rb + speed_rf)/4.f;
 	chassis->measure.cycle_speed = (speed_lf + speed_lb + speed_rb + speed_rf)/4.f;
-	
- //视觉所需车速度，x向前y向左
-//   board.tx_pkt->car_pkt.v_x = chassis->measure.front_speed * cos(yaw_angle_err_rad) 
-//             + chassis->measure.left_speed  * sin(yaw_angle_err_rad);
 
-//   board.tx_pkt->car_pkt.v_y  = chassis->measure.left_speed  * cos(yaw_angle_err_rad) 
-//             - chassis->measure.front_speed * sin(yaw_angle_err_rad);
-	
+	// 视觉所需车速度，x向前y向左
+	board.tx_pkt->car_pkt.v_x = chassis->measure.front_speed * cosf(yaw_angle_err_rad)
+	 + chassis->measure.left_speed * sinf(yaw_angle_err_rad);
+
+	board.tx_pkt->car_pkt.v_y = chassis->measure.left_speed * cosf(yaw_angle_err_rad) 
+	- chassis->measure.front_speed * sinf(yaw_angle_err_rad);
 }
 
 
@@ -351,36 +366,33 @@ static void Chassis_Positive_Calculate(Chassis_t* chassis)
  */
 static void Chassis_Offline_Update(Chassis_t* chassis)
 {
-	static uint8_t offline_id[WHEEL_CNT] = {0,0,0,0};
-  uint8_t offline_cnt = 0;
+	uint8_t offline_cnt = 0;
+	static uint8_t offline_id[WHEEL_CNT] = {0, 0, 0, 0};
 
-	for(uint8_t i = 0;i<WHEEL_CNT;i++)
+	for (uint8_t i = 0; i < WHEEL_CNT; i++)
 	{
-		if(chassis->wheel[i] != NULL)
-		chassis->wheel[i]->rx(chassis->wheel[i]);
-	}
-
-	for(uint8_t i = 0;i<WHEEL_CNT;i++)
-	{
-		if(chassis->wheel[i]->state == DEV_OFFLINE)
+		if (chassis->wheel[i]->state->status == DEV_OFFLINE)
 		{
 			offline_id[i] = 1;
 		}
-		else{
-		  offline_id[i] = 0;
+		else
+		{
+			offline_id[i] = 0;
 		}
-		
+
 		offline_cnt += offline_id[i];
+
+		chassis->state.wheel_heart[i] = 1 - offline_id[i];
 	}
-	
-  if(offline_cnt == 4)
+
+	if (offline_cnt == 4)
 	{
 		infantry.flag.chassis_off = true;
 	}
-	else{
-	  infantry.flag.chassis_off = false;
+	else
+	{
+		infantry.flag.chassis_off = false;
 	}
-
 }
 
 
@@ -509,72 +521,72 @@ static void Chassis_Pid_Calculate(Chassis_t* chassis)
 uint32_t  power_fail = 0;
 static void __attribute__((unused)) Chassis_Power_Limit(Chassis_t *chassis)
 {
-	//   static float last_buffer = 0;
-	// 	float limit_output_speed[4];
-	
-	// 	float buffer = (float)judge.pkt->buffer_energy;
-	// 	float heat_rate;//输出电流缩放比例
-	// 	float Limit_k; //轮组速度和缩放比例
-	// 	float CHAS_LimitOutput;//缩放后轮组最大速度之和
-	// 	float CHAS_TotalOutput;//轮组电流之和
-		
-	// 	//获取理想的底盘输出
-	// 	for(uint8_t i = 0;i<WHEEL_CNT;i++)
-	// 	{
-	// 		limit_output_speed[i] = chassis->wheel[i]->rx_info->speed;
-	// 	}
-		
-	// 	float OUT_MAX = 0;
-	
-	// 	OUT_MAX = CHASSIS_MAX_SPEED * 4;//最大速度之和
-		
-	// 	if(buffer > 60.f)
-	// 	{
-	// 		buffer = 60.f;//防止飞坡之后缓冲250J变为正增益系数
-	// 	}
-		
-	// 	Limit_k = buffer / 60.f;  //最大为1，飞坡后底盘一直最大速度运行
-		
-	// 	if(buffer < 25.f)
-	// 	{
-	// 		Limit_k = Limit_k * Limit_k ;//缓冲没多小就更慢一点
-	// 	}
-	// 	else
-	// 	{
-	// 		Limit_k = Limit_k;// 缓冲能量还有比较多就限制一点
-	// 	}
-			
-	// 	if(buffer < 60.f)
-	// 	{
-	// 		CHAS_LimitOutput = Limit_k * OUT_MAX; //只要缓冲能量没满才限制
-	// 	}
-	// 	else 
-	// 	{
-	// 		CHAS_LimitOutput = OUT_MAX;    //缓冲能量满的就全速前进
-	// 	}
-			
-	// 	CHAS_TotalOutput = abs(limit_output_speed[0]) + abs(limit_output_speed[1]) + abs(limit_output_speed[2]) + abs(limit_output_speed[3]) ;
-		
-	// 	if(CHAS_TotalOutput >= CHAS_LimitOutput)
-	// 	{
-	// 		heat_rate = CHAS_LimitOutput / CHAS_TotalOutput;//电流缩放比例 = 利用现在剩余缓冲能量算出的速度和限制比例 * 轮组最大速度和 / 解算出的理想轮组速度和
-	// 	}
-	// 	else{
-	// 	  heat_rate = 1.f;
-	// 	}
-		
-	// 	for(uint8_t i = 0 ; i < 4 ; i++) 
-	// 	{	
-	// 		chassis->out.wheel_powerd_out[i] = (float)(chassis->out.wheel_initial_out[i] * heat_rate);	
-	// 	}
-		
-	// 	if(buffer <= 0 && last_buffer > 0)
-	// 	{
-	// 		power_fail ++;
-	// 	}
-		
-	// 	last_buffer = buffer;
-		
+	static float last_buffer = 0;
+	float limit_output_speed[4];
+
+	float buffer = (float)judge.pkt->buffer_energy;
+	float heat_rate;		// 输出电流缩放比例
+	float Limit_k;			// 轮组速度和缩放比例
+	float CHAS_LimitOutput; // 缩放后轮组最大速度之和
+	float CHAS_TotalOutput; // 轮组电流之和
+
+	// 获取理想的底盘输出
+	for (uint8_t i = 0; i < WHEEL_CNT; i++)
+	{
+		limit_output_speed[i] = chassis->wheel[i]->rx_info->speed;
+	}
+
+	float OUT_MAX = 0;
+
+	OUT_MAX = CHASSIS_MAX_SPEED * 4; // 最大速度之和
+
+	if (buffer > 60.f)
+	{
+		buffer = 60.f; // 防止飞坡之后缓冲250J变为正增益系数
+	}
+
+	Limit_k = buffer / 60.f; // 最大为1，飞坡后底盘一直最大速度运行
+
+	if (buffer < 25.f)
+	{
+		Limit_k = Limit_k * Limit_k; // 缓冲没多小就更慢一点
+	}
+	else
+	{
+		Limit_k = Limit_k; // 缓冲能量还有比较多就限制一点
+	}
+
+	if (buffer < 60.f)
+	{
+		CHAS_LimitOutput = Limit_k * OUT_MAX; // 只要缓冲能量没满才限制
+	}
+	else
+	{
+		CHAS_LimitOutput = OUT_MAX; // 缓冲能量满的就全速前进
+	}
+
+	CHAS_TotalOutput = abs(limit_output_speed[0]) + abs(limit_output_speed[1]) + abs(limit_output_speed[2]) + abs(limit_output_speed[3]);
+
+	if (CHAS_TotalOutput >= CHAS_LimitOutput)
+	{
+		heat_rate = CHAS_LimitOutput / CHAS_TotalOutput; // 电流缩放比例 = 利用现在剩余缓冲能量算出的速度和限制比例 * 轮组最大速度和 / 解算出的理想轮组速度和
+	}
+	else
+	{
+		heat_rate = 1.f;
+	}
+
+	for (uint8_t i = 0; i < 4; i++)
+	{
+		chassis->out.wheel_powerd_out[i] = (float)(chassis->out.wheel_initial_out[i] * heat_rate);
+	}
+
+	if (buffer <= 0 && last_buffer > 0)
+	{
+		power_fail++;
+	}
+
+	last_buffer = buffer;
 }
 
 
@@ -605,7 +617,7 @@ static float Calculate_Predicted_Power(float* coefficient,float i, float w) {
   * @result  电流
 **/
 uint32_t error_test;
-static float __attribute__((unused)) Calculate_Current_Out(float *coefficient, float target_power, float w, int16_t raw_current)
+static float  Calculate_Current_Out(float *coefficient, float target_power, float w, int16_t raw_current)
 {
     if (target_power < 0)
     {
@@ -669,7 +681,7 @@ static float __attribute__((unused)) Calculate_Current_Out(float *coefficient, f
     }
 }
 
-static int16_t __attribute__((unused)) Torque_To_Current(float torque)
+static int16_t  Torque_To_Current(float torque)
 {
   float current_rad = torque / _3508_TORQUE_CONSTANT;
 	current_rad = constrain(current_rad, -_3508_MAX_CURRENT*0.9f, _3508_MAX_CURRENT*0.9f);
@@ -678,7 +690,7 @@ static int16_t __attribute__((unused)) Torque_To_Current(float torque)
 	return current_encoder;
 }
 
-static float __attribute__((unused)) Current_To_Torque(int16_t current_encoder)
+static float  Current_To_Torque(int16_t current_encoder)
 {
 	float current_rad = ((float)current_encoder / 16384.f) * _3508_MAX_CURRENT;
 	current_rad = constrain(current_rad, -_3508_MAX_CURRENT*0.9f, _3508_MAX_CURRENT*0.9f);
@@ -698,169 +710,105 @@ uint8_t buf[5];
 float power[4];
 float rate = 0;
 float fit = 0;
-float k_cap=0.013;
-static void __attribute__((unused))  New_Chassis_Power_Limit(Chassis_t *chassis)
+float k_cap=13.f;
+/*计算预测功率*/
+int16_t limit_output_current[4];
+static void  New_Chassis_Power_Limit(Chassis_t *chassis)
 {
-// //		if (judge.pkt->buffer_energy < 30)
-// //		{
-// //			Chassis_Power_Limit(chassis);
-// //			return;
-// //		}
-// 	static float last_buffer = 0;
-	
-// 	if(judge.pkt->buffer_energy<=0 && last_buffer >0)
-// 	{
-// 		power_fail ++;
-// 	}
+	// //		if (judge.pkt->buffer_energy < 30)
+	// //		{
+	// //			Chassis_Power_Limit(chassis);
+	// //			return;
+	// //		}
+	// 计算超功率次数
+	static float last_buffer = 0;
 
-// 	last_buffer = judge.pkt->buffer_energy;
-	
-// 		/*计算预测功率*/
-// 		int16_t limit_output_current[4];
+	if (judge.pkt->buffer_energy <= 0 && last_buffer > 0)
+	{
+		power_fail++;
+	}
 
-// 		for(uint8_t i =0;i<WHEEL_CNT;i++)
-//     {
-// 			limit_output_current[i] = Torque_To_Current(chassis->out.wheel_initial_out[i]);
-// 		}
-		
-// 		int16_t motor_speed[4];
+	last_buffer = judge.pkt->buffer_energy;
 
-// 		for(uint8_t i =0;i<WHEEL_CNT;i++)
-//     {
-// 			motor_speed[i] = chassis->wheel[i]->rx_info->encoder_speed;
-// 		}
-		
-		
-// 		float power_fit = 0;
-// 		float temp_power[4];
-// 		float RF_speed_abs=abs(motor_speed[WHEEL_RF]);
-// 		float RB_speed_abs=abs(motor_speed[WHEEL_RB]);
-// 		float LF_speed_abs=abs(motor_speed[WHEEL_LF]);
-// 		float LB_speed_abs=abs(motor_speed[WHEEL_LB]);
-// 		float target_front_speed=chassis->target.front_speed;
-// 		float target_left_speed =chassis->target.left_speed ;
-// 		float target_cycle_speed=chassis->target.cycle_speed;
-// 		buf[0]=(abs(abs(RF_speed_abs+LF_speed_abs)-abs(LB_speed_abs+RB_speed_abs))>=chassis->slip.wheel_speed_max_difference);
-// 		buf[1]=(abs(target_front_speed)>(CHASSIS_MAX_SPEED/4.f));
-// 		buf[2]=(abs(target_left_speed))<(CHASSIS_MAX_SPEED/4.f);
-// 		buf[3]=abs(target_cycle_speed)<(CHASSIS_MAX_SPEED/6.f);
-			
-// 		/*不动态分配功率*/
-// 		chassis->slip.is_allot=1;
-// 		//判断前轮打滑,打滑前轮卸力
-// 		if(buf[0]&& buf[1]&& buf[2]&& buf[3])
-// 		{
-// 			/*不进行打滑处理*/
-// 			chassis->slip.slip_flag=1;
-// 		}
-// 		else if(abs(target_front_speed)<=CHASSIS_MAX_SPEED/6.f)
-// 		{
-// 			chassis->slip.slip_flag=0;
-// 		}
-		
-			
-// 		if(chassis->slip.slip_flag==1)
-// 		{
-// 			if(abs(gimbal.info.yaw_mec_err_raw) <= PI/2)
-// 			{
-// 				limit_output_current[WHEEL_RF] = chassis->slip.slip_low_out;
-// 			  limit_output_current[WHEEL_LF] = chassis->slip.slip_low_out;
-// 			}
-// 			else{
-// 			  limit_output_current[WHEEL_RB] = chassis->slip.slip_low_out;
-// 			  limit_output_current[WHEEL_LB] = chassis->slip.slip_low_out;
-			
-// 			}	
-// 		}
-		
-// 		//只在前进时给后轮分配更多功率，如果不是只前进或者旋转分量太大就后驱
-// 		if((abs(target_left_speed)>(CHASSIS_MAX_SPEED/4.f)||(abs(target_cycle_speed)>CHASSIS_MAX_SPEED/5.f)))
-// 		{
-// 			chassis->slip.is_allot=1;
-// 		}
-			
-// 		for(uint8_t i = 0; i < 4; i++)
-// 		{
-// 			//分配功率
-// 			if(abs(gimbal.info.yaw_mec_err_raw) <= PI/2)
-// 			{
-// 				if(i==WHEEL_RB||i==WHEEL_LB)
-// 			  {
-// 				  temp_power[i] = (2-chassis->slip.is_allot)*Calculate_Predicted_Power(chassis->power_coefficient[i], limit_output_current[i], motor_speed[i]);
-// 		  	}
-// 			  else
-// 			  {
-// 				  temp_power[i] = chassis->slip.is_allot*Calculate_Predicted_Power(chassis->power_coefficient[i], limit_output_current[i], motor_speed[i]);
-// 			  }
-			
-// 			}
-// 			else{
-// 			  if(i==WHEEL_RF||i==WHEEL_LF)
-// 			  {
-// 				  temp_power[i] = (2-chassis->slip.is_allot)*Calculate_Predicted_Power(chassis->power_coefficient[i], limit_output_current[i], motor_speed[i]);
-// 		  	}
-// 			  else
-// 			  {
-// 				  temp_power[i] = chassis->slip.is_allot*Calculate_Predicted_Power(chassis->power_coefficient[i], limit_output_current[i], motor_speed[i]);
-// 			  }
-			
-// 			}
-// 			if(temp_power[i] > 0)
-// 			{
-// 				power_fit += temp_power[i];
-// 			}
-		
-// 			power[i] = temp_power[i];
-// 		}
-		
-// 		fit = power_fit;
-// 		/*计算最大输出功率*/
-// 		//	float max_power = judge.pkt->chassis_power_limit * 0.75;
-// 		float max_power = judge.pkt->chassis_power_limit * ((judge.pkt->buffer_energy) * ((1 - 0.75) / (60 - 30)) + 0.5);
-		
-		
-// //		if(cap_tx_info.bit_control.cap_switch == 1)//①开超电
-// //		{
-// //			if (cap.status->status == DEV_ONLINE)//②如果电容在线
-// //			{
-// //					if (cap.info->cap_Ucr > 13)
-// //				{
-// //					max_power += (cap.info->cap_Ucr - 13.f) *k_cap + 10;
-// //				}
-// //			}
-// //		}
-		
-// 		float power_rate = 0;
-// 		if(power_fit == 0)
-// 		{
-// 			power_rate = max_power;
-// 		}
-// 		else{
-// 		  power_rate = max_power / power_fit;//折算率
-// 		}
-		
-// 		rate = power_rate;
-		
-// 		/*计算输出电流*/
-// 		//预测功率大于最大功率才限制
-// 		if (power_fit > judge.pkt->chassis_power_limit)
-// 		{
-// 			//通过折算后的功率、电机现在的转速、pid算出的电流来得到折算后的电流
-			
-// 			chassis->out.wheel_powerd_out[WHEEL_RF] = Current_To_Torque(Calculate_Current_Out(chassis->power_coefficient[WHEEL_RF],temp_power[WHEEL_RF] * power_rate, motor_speed[WHEEL_RF],limit_output_current[WHEEL_RF]));
-// 			chassis->out.wheel_powerd_out[WHEEL_RB] = Current_To_Torque(Calculate_Current_Out(chassis->power_coefficient[WHEEL_RB],temp_power[WHEEL_RB] * power_rate, motor_speed[WHEEL_RB],limit_output_current[WHEEL_RB]));
-// 			chassis->out.wheel_powerd_out[WHEEL_LF] = Current_To_Torque(Calculate_Current_Out(chassis->power_coefficient[WHEEL_LF],temp_power[WHEEL_LF] * power_rate, motor_speed[WHEEL_LF],limit_output_current[WHEEL_LF]));
-// 			chassis->out.wheel_powerd_out[WHEEL_LB] = Current_To_Torque(Calculate_Current_Out(chassis->power_coefficient[WHEEL_LB],temp_power[WHEEL_LB] * power_rate, motor_speed[WHEEL_LB],limit_output_current[WHEEL_LB]));
-			
-// 		}
-// 		else
-//		{
-			// chassis->out.wheel_powerd_out[WHEEL_RF] = Current_To_Torque(limit_output_current[WHEEL_RF]);
-			// chassis->out.wheel_powerd_out[WHEEL_RB] = Current_To_Torque(limit_output_current[WHEEL_RB]);
-			// chassis->out.wheel_powerd_out[WHEEL_LF] = Current_To_Torque(limit_output_current[WHEEL_LF]);
-		  	// chassis->out.wheel_powerd_out[WHEEL_LB] = Current_To_Torque(limit_output_current[WHEEL_LB]);
-// 		}
-	
+	for (uint8_t i = 0; i < WHEEL_CNT; i++)
+	{
+		limit_output_current[i] = Torque_To_Current(chassis->out.wheel_initial_out[i]);
+	}
+
+	int16_t motor_speed[4];
+
+	for (uint8_t i = 0; i < WHEEL_CNT; i++)
+	{
+		motor_speed[i] = chassis->wheel[i]->rx_info->encoder_speed;
+	}
+
+	float power_fit = 0;
+	float temp_power[4];
+
+	for (uint8_t i = 0; i < 4; i++)
+	{
+		// 根据目标电流实际电流求预期功率
+		temp_power[i] = Calculate_Predicted_Power(chassis->power_coefficient[i], limit_output_current[i], motor_speed[i]);
+
+		// 放电不算
+		if (temp_power[i] > 0)
+		{
+			power_fit += temp_power[i];
+		}
+
+		power[i] = temp_power[i];
+	}
+
+	fit = power_fit;
+	/*计算最大输出功率*/
+	float max_power = judge.pkt->chassis_power_limit;
+
+	// 超电在线，开超电，超电能放电，超电电量充裕，操作手用超电
+	// if (cap.status->status == DEV_ONLINE && cap_tx_info.bit_control.cap_switch == 1 && cap.info->ability == 1 && cap.info->cap_Ucr > 13.f && infantry.flag.cap_use_flag == true)
+	// {
+	// 	max_power += (cap.info->cap_Ucr - 13.f) * k_cap;
+
+	// 	// 爆发
+	// 	chassis->burst_flag = true;
+	// }
+	// else
+	{
+		// 防实际小误差使得缓冲慢慢掉
+		max_power *= ((judge.pkt->buffer_energy) * ((1.f - 0.75f) / (60.f - 30.f)) + 0.5f);
+
+		chassis->burst_flag = false;
+	}
+
+	float power_rate = 0;
+	if (power_fit == 0)
+	{
+		power_rate = 0;
+	}
+	else
+	{
+		power_rate = max_power / power_fit; // 折算率
+	}
+
+	rate = power_rate;
+
+	/*计算输出电流*/
+	// 预测功率大于最大功率才限制
+	if (power_fit > max(max_power, judge.pkt->chassis_power_limit))
+	{
+		// 通过折算后的功率、电机现在的转速、pid算出的电流来得到折算后的电流
+
+		chassis->out.wheel_powerd_out[WHEEL_RF] = Current_To_Torque(Calculate_Current_Out(chassis->power_coefficient[WHEEL_RF], temp_power[WHEEL_RF] * power_rate, motor_speed[WHEEL_RF], limit_output_current[WHEEL_RF]));
+		chassis->out.wheel_powerd_out[WHEEL_RB] = Current_To_Torque(Calculate_Current_Out(chassis->power_coefficient[WHEEL_RB], temp_power[WHEEL_RB] * power_rate, motor_speed[WHEEL_RB], limit_output_current[WHEEL_RB]));
+		chassis->out.wheel_powerd_out[WHEEL_LF] = Current_To_Torque(Calculate_Current_Out(chassis->power_coefficient[WHEEL_LF], temp_power[WHEEL_LF] * power_rate, motor_speed[WHEEL_LF], limit_output_current[WHEEL_LF]));
+		chassis->out.wheel_powerd_out[WHEEL_LB] = Current_To_Torque(Calculate_Current_Out(chassis->power_coefficient[WHEEL_LB], temp_power[WHEEL_LB] * power_rate, motor_speed[WHEEL_LB], limit_output_current[WHEEL_LB]));
+	}
+	else
+	{
+		chassis->out.wheel_powerd_out[WHEEL_RF] = Current_To_Torque(limit_output_current[WHEEL_RF]);
+		chassis->out.wheel_powerd_out[WHEEL_RB] = Current_To_Torque(limit_output_current[WHEEL_RB]);
+		chassis->out.wheel_powerd_out[WHEEL_LF] = Current_To_Torque(limit_output_current[WHEEL_LF]);
+		chassis->out.wheel_powerd_out[WHEEL_LB] = Current_To_Torque(limit_output_current[WHEEL_LB]);
+	}
 }
 
 
@@ -870,66 +818,78 @@ static void __attribute__((unused))  New_Chassis_Power_Limit(Chassis_t *chassis)
   */
 float Power_Estimate_Advanced(void)
 {
-    // uint16_t buffer = judge.pkt->buffer_energy;
-    // float power_limit = judge.pkt->chassis_power_limit;
-    
-    // // 环形缓冲区保存最近 5 个采样（500ms）
-    // static uint16_t buffer_ring[5] = {0};
-    // static uint8_t idx = 0;
-    static float power_out = 0;
-    
-    // const float dt = 0.1f;
-    
-    // // 存入新数据
-    // buffer_ring[idx] = buffer;
-    // idx = (idx + 1) % 5;
-    
-    // // 计算中值（去噪）
-    // uint16_t sorted[5];
-    // memcpy(sorted, buffer_ring, sizeof(sorted));
-    // // 简单冒泡排序取中值
-    // for (uint8_t i = 0; i < 4; i++) {
-    //     for (uint8_t j = 0; j < 4-i; j++) {
-    //         if (sorted[j] > sorted[j+1]) {
-    //             uint16_t tmp = sorted[j];
-    //             sorted[j] = sorted[j+1];
-    //             sorted[j+1] = tmp;
-    //         }
-    //     }
-    // }
-    // uint16_t buffer_median = sorted[2];  // 中值
-    
-    // // 计算趋势（最近 200ms 的变化）
-    // uint8_t idx_now = (idx + 5 - 1) % 5;      // 最新
-    // uint8_t idx_old = (idx + 5 - 3) % 5;      // 200ms 前
-    // int16_t trend = (int16_t)buffer_ring[idx_now] - (int16_t)buffer_ring[idx_old];
-    
-    // // 预测未来 100ms 的缓冲
-    // float predicted_delta = (float)trend / 2.0f;  // 200ms → 100ms
-    
-    // // 反推功率
-    // float power_raw;
-    // if (buffer_median == 0) {
-    //     power_raw = power_limit;
-    // } else if (predicted_delta < 0) {
-    //     // 趋势减少，功率在上升
-    //     power_raw = power_limit + fabsf(predicted_delta) / dt;
-    // } else if (predicted_delta > 0) {
-    //     // 趋势增加，功率在下降
-    //     power_raw = power_limit - 2.0f;
-    // } else {
-    //     power_raw = power_limit + 2.0f;
-    // }
-    
-    // // 输出滤波
-    // const float alpha = 0.25f;
-    // power_out = alpha * power_raw + (1.0f - alpha) * power_out;
-    
-    // // 限幅
-    // if (power_out < 0) power_out = 0;
-    // if (power_out > power_limit * 2.5f) power_out = power_limit * 2.5f;
-    
-     return power_out;
+	uint16_t buffer = judge.pkt->buffer_energy;
+	float power_limit = judge.pkt->chassis_power_limit;
+
+	// 环形缓冲区保存最近 5 个采样（500ms）
+	static uint16_t buffer_ring[5] = {0};
+	static uint8_t idx = 0;
+	static float power_out = 0;
+
+	const float dt = 0.1f;
+
+	// 存入新数据
+	buffer_ring[idx] = buffer;
+	idx = (idx + 1) % 5;
+
+	// 计算中值（去噪）
+	uint16_t sorted[5];
+	memcpy(sorted, buffer_ring, sizeof(sorted));
+	// 简单冒泡排序取中值
+	for (uint8_t i = 0; i < 4; i++)
+	{
+		for (uint8_t j = 0; j < 4 - i; j++)
+		{
+			if (sorted[j] > sorted[j + 1])
+			{
+				uint16_t tmp = sorted[j];
+				sorted[j] = sorted[j + 1];
+				sorted[j + 1] = tmp;
+			}
+		}
+	}
+	uint16_t buffer_median = sorted[2]; // 中值
+
+	// 计算趋势（最近 200ms 的变化）
+	uint8_t idx_now = (idx + 5 - 1) % 5; // 最新
+	uint8_t idx_old = (idx + 5 - 3) % 5; // 200ms 前
+	int16_t trend = (int16_t)buffer_ring[idx_now] - (int16_t)buffer_ring[idx_old];
+
+	// 预测未来 100ms 的缓冲
+	float predicted_delta = (float)trend / 2.0f; // 200ms → 100ms
+
+	// 反推功率
+	float power_raw;
+	if (buffer_median == 0)
+	{
+		power_raw = power_limit;
+	}
+	else if (predicted_delta < 0)
+	{
+		// 趋势减少，功率在上升
+		power_raw = power_limit + fabsf(predicted_delta) / dt;
+	}
+	else if (predicted_delta > 0)
+	{
+		// 趋势增加，功率在下降
+		power_raw = power_limit - 2.0f;
+	}
+	else
+	{
+		power_raw = power_limit + 2.0f;
+	}
+
+	// 输出滤波
+	const float alpha = 0.25f;
+	power_out = alpha * power_raw + (1.0f - alpha) * power_out;
+
+	// 限幅
+	if (power_out < 0)
+		power_out = 0;
+	if (power_out > power_limit * 2.5f)
+		power_out = power_limit * 2.5f;
+
+	return power_out;
 }
 
 
@@ -949,10 +909,10 @@ float Power_Estimate_Advanced(void)
 //	limit_output_current[WHEEL_LF] = chassis->out.wheel_end_out[WHEEL_LF];
 //	limit_output_current[WHEEL_LB] = chassis->out.wheel_end_out[WHEEL_LB];
 
-//	motor_speed[WHEEL_RF] = chassis->wheel->motor[WHEEL_RF]->rx_info->speed;
-//	motor_speed[WHEEL_RB] = chassis->wheel->motor[WHEEL_RB]->rx_info->speed;
-//	motor_speed[WHEEL_LF] = chassis->wheel->motor[WHEEL_LF]->rx_info->speed;
-//	motor_speed[WHEEL_LB] = chassis->wheel->motor[WHEEL_LB]->rx_info->speed;
+//	motor_speed[WHEEL_RF] = chassis->wheel[WHEEL_RF]->rx_info->speed;
+//	motor_speed[WHEEL_RB] = chassis->wheel[WHEEL_RB]->rx_info->speed;
+//	motor_speed[WHEEL_LF] = chassis->wheel[WHEEL_LF]->rx_info->speed;
+//	motor_speed[WHEEL_LB] = chassis->wheel[WHEEL_LB]->rx_info->speed;
 
 //	for(uint8_t i = 0; i < 4; i++)
 //	{
@@ -972,8 +932,10 @@ float Power_Estimate_Advanced(void)
  * @brief  底盘报文发送
  * @note   关底盘和关功率在此最后处理
  */
+int test_count;
 static void Chassis_Cmd_Transmit(Chassis_t* chassis)
 {
+	static int count = 0,last_chassis_state = 0;
 	#if POWER_LIMIT_SWITCH == 0
 	  chassis->out.wheel_end_out[WHEEL_RF] = chassis->out.wheel_initial_out[WHEEL_RF];
 	  chassis->out.wheel_end_out[WHEEL_RB] = chassis->out.wheel_initial_out[WHEEL_RB];
@@ -1001,11 +963,33 @@ static void Chassis_Cmd_Transmit(Chassis_t* chassis)
 	  chassis->wheel[WHEEL_LB]->tx_info->torque = chassis->out.wheel_end_out[WHEEL_LB];
 	#endif
 	
+	int triggle = (chassis->wheel[WHEEL_RF]->state->status == DEV_ONLINE &&
+				   chassis->wheel[WHEEL_RB]->state->status == DEV_ONLINE &&
+				   chassis->wheel[WHEEL_LF]->state->status == DEV_ONLINE &&
+				   chassis->wheel[WHEEL_LB]->state->status == DEV_ONLINE );
+
+	//底盘全掉阵亡重启时不控
+	if (count >= 5000 || triggle)
+	{
+		count = 0;
+	}
+	else if((!infantry.flag.chassis_off && last_chassis_state == 1) || 
+		count != 0) 
+	{
+		count++;
+	  chassis->wheel[WHEEL_RF]->tx_info->torque = 0;
+	  chassis->wheel[WHEEL_RB]->tx_info->torque = 0;
+	  chassis->wheel[WHEEL_LF]->tx_info->torque = 0;
+	  chassis->wheel[WHEEL_LB]->tx_info->torque = 0;
+	}
+
 	for(uint8_t i = 0;i<WHEEL_CNT;i++)
 	{
 		chassis->wheel[i]->single_set_torque(chassis->wheel[i]);
 	}
-	
+	last_chassis_state = infantry.flag.chassis_off;
+
+	test_count = count;
 }
 
 float each_power[4];
@@ -1025,7 +1009,7 @@ static void Chassis_Work(Chassis_t* chassis)
 	Chassis_Feedforward_Calculate(chassis);
 	Chassis_Pid_Calculate(chassis);
 //	Chassis_Power_Limit(chassis);
-	//New_Chassis_Power_Limit(chassis);
+	New_Chassis_Power_Limit(chassis);
 	result= 
 	 Calculate_Predicted_Power(chassis->power_coefficient[0],(float)chassis->wheel[0]->rx_info->torque_current_raw, (float)chassis->wheel[0]->rx_info->encoder_speed)
 	+Calculate_Predicted_Power(chassis->power_coefficient[1],(float)chassis->wheel[1]->rx_info->torque_current_raw, (float)chassis->wheel[1]->rx_info->encoder_speed)

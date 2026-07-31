@@ -3,11 +3,11 @@
 
 #include "device_motor.h"
 
-#define   CHASSIS_MAX_SPEED     60
-#define   FRONT_MAX_SPEED       40
-#define   LEFT_MAX_SPEED        40
+#define   CHASSIS_MAX_SPEED     80
+#define   FRONT_MAX_SPEED       50
+#define   LEFT_MAX_SPEED        50
 #define   CYCLE_MAX_SPEED       40
-#define   TURN_CYCLE_SPEED      40
+#define   TURN_CYCLE_SPEED      55
 
 #define  ROOM_ENOUGH_GIMBAL   0
 
@@ -67,7 +67,11 @@ typedef struct{
 
 }Chassis_Key_Info_t;
 
+typedef struct
+{
+	uint8_t wheel_heart[WHEEL_CNT];
 
+} Chassis_State_t;
 
 typedef struct{
 	float  wheel_feed_out[WHEEL_CNT];// 重力前馈输出
@@ -96,13 +100,16 @@ typedef struct Chassis_Struct_t{
   Chassis_Target_t    target;
 	Chassis_Measure_t   measure;
 	Chassis_Key_Info_t  key;
+	Chassis_State_t 	state;
 	Chassis_Slip_t      slip;
 	float               power_coefficient[4][6];
-	
-  Chassis_Out_t       out;
+	bool				burst_flag;
+
+	Chassis_Out_t 		out;
 	
 	void (*init)(struct Chassis_Struct_t* chassis);
 	void (*work)(struct Chassis_Struct_t* chassis);
+	void (*heart_beat)(struct Chassis_Struct_t *chassis);
 
 }Chassis_t;
 

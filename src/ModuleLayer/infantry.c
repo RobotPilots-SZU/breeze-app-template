@@ -10,7 +10,7 @@ LOG_MODULE_DECLARE(infantry_down_test, LOG_LEVEL_INF);
 //#include "vision.h"
 //#include "ui.h"
 //#include "cap.h"
-//#include "judge.h"
+#include "judge.h"
 
 static void Infantry_Init(Infantry_t* infantry);
 static void Rc_Status_Update(Infantry_t* infantry);
@@ -136,8 +136,8 @@ static void Rc_Status_Update(Infantry_t* infantry)
 					
 					if(infantry->flag.turn_flag == true)
 					{
-						//infantry->mode = I_TURN;
-						infantry->mode = I_IMU;
+						infantry->mode = I_TURN;
+						//infantry->mode = I_IMU;
 						
 					}
 					else{
