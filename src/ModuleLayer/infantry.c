@@ -2,6 +2,7 @@
 #include "chassis.h"
 #include "rp_config.h"
 #include <zephyr/logging/log.h>
+#include <zephyr/sys/reboot.h>
 LOG_MODULE_DECLARE(infantry_down_test, LOG_LEVEL_INF);
 #include "board_protocol.h"
 #include "gimbal.h"
@@ -268,6 +269,7 @@ static void Rc_Status_Update(Infantry_t* infantry)
 				else if(WHEEL_DOWN_TO_ONCE)
 				{
 					infantry->flag.car_reset = true; // 软件复位
+					sys_reboot(SYS_REBOOT_COLD);
 				}
 			}
 			
