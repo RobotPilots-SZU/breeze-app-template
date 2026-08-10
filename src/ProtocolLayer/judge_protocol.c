@@ -24,8 +24,7 @@ drv_judge_info_t drv_judge_info = {
 static uint8_t rx_buf[RX_BUF_SIZE];
 static uint16_t rx_len = 0;
 void USART1_rxDataHandler(const struct device *dev, void *user_data)
-{
-	// uart_irq_rx_disable(dev);
+{	
 	uart_irq_update(dev);
 	uint8_t byte;
 
@@ -69,7 +68,7 @@ void USART1_rxDataHandler(const struct device *dev, void *user_data)
 			{
 				memcpy(&drv_judge_info.cmd_id, rx_buf + 5, 2);
 				// LOG_INF("drv_judge_info.cmd_id%d", drv_judge_info.cmd_id);
-				//Judge_Data_Update(drv_judge_info.cmd_id, rx_buf + 7);
+				Judge_Data_Update(drv_judge_info.cmd_id, rx_buf + 7);
 				memcpy(&drv_judge_info.frame_tail, rx_buf + 5 + 2 + drv_judge_info.frame_header->data_length, 2);
 				//消费完整帧
 				memmove(rx_buf, rx_buf + frame_length, rx_len - frame_length);

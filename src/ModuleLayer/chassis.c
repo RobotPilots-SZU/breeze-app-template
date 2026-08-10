@@ -371,6 +371,12 @@ static void Chassis_Offline_Update(Chassis_t* chassis)
 
 	for (uint8_t i = 0; i < WHEEL_CNT; i++)
 	{
+		if (chassis->wheel[i] != NULL)
+			chassis->wheel[i]->rx(chassis->wheel[i]);
+	}
+
+	for (uint8_t i = 0; i < WHEEL_CNT; i++)
+	{
 		if (chassis->wheel[i]->state->status == DEV_OFFLINE)
 		{
 			offline_id[i] = 1;
