@@ -70,17 +70,15 @@ void Judge_Data_Update(uint16_t id, uint8_t *rxBuf)
 
     case ID_game_robot_HP:
       memcpy(&judge.info->game_robot_HP, rxBuf, LEN_game_robot_HP);
-	
-		  judge.pkt->blood[J_HERO] = judge.info->game_robot_HP.ally_1_robot_HP;
-		  judge.pkt->blood[J_ENGINEER] = judge.info->game_robot_HP.ally_2_robot_HP;
-		  judge.pkt->blood[J_INFANTRY_3] = judge.info->game_robot_HP.ally_3_robot_HP;
-		  judge.pkt->blood[J_INFANTRY_4] = judge.info->game_robot_HP.ally_4_robot_HP;
-		  judge.pkt->blood[J_DAMAGE] = judge.info->game_robot_HP.damage_difference; 
-		  judge.pkt->blood[J_SENTRY] = judge.info->game_robot_HP.ally_7_robot_HP;
-		  judge.pkt->blood[J_ALLY_OUTPOST] = judge.info->game_robot_HP.ally_outpost_HP;
-		  judge.pkt->blood[J_ALLY_BASE] = judge.info->game_robot_HP.ally_base_HP;
-      judge.pkt->blood[J_ENEMY_OUTPOST] = judge.info->game_robot_HP.enemy_outpost_HP;
-      judge.pkt->blood[J_ENEMY_BASE] = judge.info->game_robot_HP.enemy_base_HP;
+
+      judge.pkt->blood[J_HERO] = judge.info->game_robot_HP.ally_1_robot_HP;
+      judge.pkt->blood[J_ENGINEER] = judge.info->game_robot_HP.ally_2_robot_HP;
+      judge.pkt->blood[J_INFANTRY_3] = judge.info->game_robot_HP.ally_3_robot_HP;
+      judge.pkt->blood[J_INFANTRY_4] = judge.info->game_robot_HP.ally_4_robot_HP;
+      judge.pkt->blood[RESERVED] = judge.info->game_robot_HP.reserved;
+      judge.pkt->blood[J_SENTRY] = judge.info->game_robot_HP.ally_7_robot_HP;
+      judge.pkt->blood[J_OUTPOST] = judge.info->game_robot_HP.ally_outpost_HP;
+      judge.pkt->blood[J_BASE] = judge.info->game_robot_HP.ally_base_HP;
 
       for(uint8_t i = 0; i< J_ROBOT_CNT;i++)
 		  {

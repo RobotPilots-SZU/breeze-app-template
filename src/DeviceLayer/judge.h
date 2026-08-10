@@ -35,7 +35,7 @@
 /* 注意：长度 = 数据段长度，不含帧头(5)+cmd_id(2)+CRC16(2) */
 #define LEN_game_status              11U
 #define LEN_game_result              1U
-#define LEN_game_robot_HP            20U
+#define LEN_game_robot_HP            16U
 #define LEN_event_data               4U
 #define LEN_referee_warning          3U
 #define LEN_dart_info                3U
@@ -97,16 +97,14 @@ typedef struct __attribute__((packed))
  */
 typedef struct __attribute__((packed))
 {
-    uint16_t ally_1_robot_HP;  /* 己方 1 号英雄机器人血量 */
-    uint16_t ally_2_robot_HP;  /* 己方 2 号工程机器人血量 */
-    uint16_t ally_3_robot_HP;  /* 己方 3 号步兵机器人血量 */
-    uint16_t ally_4_robot_HP;  /* 己方 4 号步兵机器人血量 */
-    int16_t damage_difference; /* 伤害差值（或血量差值） */
-    uint16_t ally_7_robot_HP;  /* 己方 7 号哨兵机器人血量 */
-    uint16_t ally_outpost_HP;  /* 己方前哨站血量 */
-    uint16_t ally_base_HP;     /* 己方基地血量 */
-    uint16_t enemy_outpost_HP; /* 敌方前哨站血量 */
-    uint16_t enemy_base_HP;    /* 敌方基地血量 */
+    uint16_t ally_1_robot_HP; /* 己方 1 号英雄机器人血量 */
+    uint16_t ally_2_robot_HP; /* 己方 2 号工程机器人血量 */
+    uint16_t ally_3_robot_HP; /* 己方 3 号步兵机器人血量 */
+    uint16_t ally_4_robot_HP; /* 己方 4 号步兵机器人血量 */
+    uint16_t reserved;        /* 保留位 */
+    uint16_t ally_7_robot_HP; /* 己方 7 号哨兵机器人血量 */
+    uint16_t ally_outpost_HP; /* 己方前哨站血量 */
+    uint16_t ally_base_HP;    /* 己方基地血量 */
 } game_robot_HP_t;
 
 
@@ -402,12 +400,10 @@ typedef enum
     J_ENGINEER,
     J_INFANTRY_3,
     J_INFANTRY_4,
-    J_DAMAGE,
+    RESERVED,
     J_SENTRY,
-    J_ALLY_OUTPOST,
-    J_ALLY_BASE,
-    J_ENEMY_OUTPOST,
-    J_ENEMY_BASE,
+    J_OUTPOST,
+    J_BASE,
     J_ROBOT_CNT,
 
 } Judge_Robot_Class_e;

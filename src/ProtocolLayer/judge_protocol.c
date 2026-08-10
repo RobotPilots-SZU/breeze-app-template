@@ -25,10 +25,10 @@ static uint8_t rx_buf[RX_BUF_SIZE];
 static uint16_t rx_len = 0;
 void USART1_rxDataHandler(const struct device *dev, void *user_data)
 {
+	// uart_irq_rx_disable(dev);
 	uart_irq_update(dev);
 	uint8_t byte;
 
-	LOG_INF("into usart1 date");
 	while (uart_irq_rx_ready(dev) && uart_fifo_read(dev, &byte, 1) > 0)
 	{
 		//将数据填入
@@ -60,26 +60,33 @@ void USART1_rxDataHandler(const struct device *dev, void *user_data)
 			drv_judge_info.frame_header->SOF = rx_buf[0];
 			memcpy(&drv_judge_info.frame_header->data_length, rx_buf + 1, 4);
 			uint16_t frame_length = 5 + 2 + drv_judge_info.frame_header->data_length + 2;
-			if (rx_len < frame_length)
+			if (rx_len < frame_length)//等待完整帧
+			{
 				break;
+			}
 			// 先CRC8
 			if (Verify_CRC8_Check_Sum(rx_buf, 5) && Verify_CRC16_Check_Sum(rx_buf, frame_length))
 			{
 				memcpy(&drv_judge_info.cmd_id, rx_buf + 5, 2);
-				LOG_INF("drv_judge_info.cmd_id%d", drv_judge_info.cmd_id);
-				Judge_Data_Update(drv_judge_info.cmd_id, rx_buf + 7);
+				// LOG_INF("drv_judge_info.cmd_id%d", drv_judge_info.cmd_id);
+				//Judge_Data_Update(drv_judge_info.cmd_id, rx_buf + 7);
 				memcpy(&drv_judge_info.frame_tail, rx_buf + 5 + 2 + drv_judge_info.frame_header->data_length, 2);
+				//消费完整帧
+				memmove(rx_buf, rx_buf + frame_length, rx_len - frame_length);
+				rx_len -= frame_length;
 			}
 			else
 			{
-				// CRC 失败，跳过当前帧头继续尝试
-				memmove(rx_buf, rx_buf + 1, rx_len - 1);
-				rx_len--;
-				continue;
+				// CRC 失败：往后找下一个首帧，一次搬到位（不再逐字节搬移）
+				for (i = 1; i < rx_len && rx_buf[i] != 0xA5; i++);
+				if (i == rx_len)
+				{
+					rx_len = 0;
+					break;
+				}
+				memmove(rx_buf, rx_buf + i, rx_len - i);
+				rx_len -= i;
 			}
-			// 读取到数据移除整个完整帧
-			memmove(rx_buf, rx_buf + frame_length, rx_len - frame_length);
-			rx_len -= frame_length;
 		}
 	}
 }

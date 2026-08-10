@@ -7,6 +7,10 @@
     fifo-watermark = <3>;
 };
 
+&usart1 {
+    current-speed = <115200>;
+};
+
 / {
     remote: remote0 {
         status = "okay";
