@@ -40,8 +40,8 @@ typedef struct Time_trigger_struct {
 #define GET_EVENT(EVENT, FLAG) ((EVENT) & (FLAG))
 /* 数值函数 */
 #define constrain(x, min, max) ((x > max) ? max : (x < min ? min : x))
-//#define max(a, b) ((a) > (b) ? (a) : (b))
-//#define min(a, b) ((a) < (b) ? (a) : (b))
+#define max(a, b) ((a) > (b) ? (a) : (b))
+#define min(a, b) ((a) < (b) ? (a) : (b))
 #define abs(x) ((x) > 0 ? (x) : (-(x)))
 #define one(x) ((x) > 0 ? (1) : (-1))
 #define sgn(x) (((x) > 0) ? 1 : ((x) < 0 ? -1 : 0))
