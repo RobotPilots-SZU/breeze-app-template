@@ -296,7 +296,7 @@ static void Chassis_Target_Update(Chassis_t* chassis)
 
 /**
  * @brief  底盘运动学逆解算，车速算轮速
- * @note   速度是弧度
+ * @note   速度是弧度，当前策略是尽量保旋转速度而削减平动速度
  */
 static void Chassis_Inverse_Calculate(Chassis_t* chassis)
 {
@@ -332,6 +332,10 @@ static void Chassis_Inverse_Calculate(Chassis_t* chassis)
 	chassis->target.motor_speed[WHEEL_LB] = -front - left + cycle;
 	chassis->target.motor_speed[WHEEL_RB] = front - left + cycle;
 	chassis->target.motor_speed[WHEEL_RF] = front + left + cycle;
+
+	chassis->target.front_speed = front;
+	chassis->target.left_speed = left;
+	chassis->target.cycle_speed = cycle;
 }
 
 /**
@@ -705,10 +709,10 @@ static float  Current_To_Torque(int16_t current_encoder)
 	return torque;
 }
 
-
 /**
   * @Name    New_Chassis_Power_Limit
   * @brief   给底盘电机输出进行功率限制赋值,由于pid计算出的扭矩与功率计所需电流单位不一致，函数中存在转化
+			 在原新功率算法基础上改动过
   * @param   chassis
 **/
 float limit=60;
@@ -716,7 +720,9 @@ uint8_t buf[5];
 float power[4];
 float rate = 0;
 float fit = 0;
-float k_cap=13.f;
+float k_cap_top = 10.f;
+float k_cap_ord = 7.f;
+float k_cap = 0.f;
 /*计算预测功率*/
 int16_t limit_output_current[4];
 static void  New_Chassis_Power_Limit(Chassis_t *chassis)
@@ -769,13 +775,29 @@ static void  New_Chassis_Power_Limit(Chassis_t *chassis)
 	/*计算最大输出功率*/
 	float max_power = judge.pkt->chassis_power_limit;
 
-	// 超电在线，开超电，超电能放电，超电电量充裕，操作手用超电
-	// if (cap.status->status == DEV_ONLINE && cap_tx_info.bit_control.cap_switch == 1 && cap.info->ability == 1 && cap.info->cap_Ucr > 13.f && infantry.flag.cap_use_flag == true)
-	// {
-	// 	max_power += (cap.info->cap_Ucr - 13.f) * k_cap;
+	float front_speed_err = abs(chassis->target.front_speed - chassis->measure.front_speed);
+	float left_speed_err = abs(chassis->target.left_speed - chassis->measure.left_speed);
+	float cycle_speed_err = abs(chassis->target.cycle_speed - chassis->measure.cycle_speed);
+	float total_speed_err = front_speed_err + left_speed_err + cycle_speed_err;
 
-	// 	// 爆发
-	// 	chassis->burst_flag = true;
+	// 超电在线，开超电，超电能放电，超电电量充裕，操作手用超电
+	// if (cap.status->status == DEV_ONLINE && cap_tx_info.bit_control.cap_switch == 1
+	// && cap.info->ability == 1 && cap.info->cap_Ucr > 13.f && infantry.flag.cap_use_flag == true)
+	// {
+	// 	if(total_speed_err >= 10.f)
+	// {
+	// 	k_cap = 2.f;
+	// }
+	// else
+	// {
+	// 	k_cap = 0.f;
+	// }
+
+	// max_power += total_speed_err * k_cap;
+	// max_power = constrain(max_power, judge.pkt->chassis_power_limit, 160.f);
+
+	// // 爆发
+	// chassis->burst_flag = true;
 	// }
 	// else
 	{

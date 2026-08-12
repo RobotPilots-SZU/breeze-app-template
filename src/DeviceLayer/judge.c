@@ -75,7 +75,6 @@ void Judge_Data_Update(uint16_t id, uint8_t *rxBuf)
       judge.pkt->blood[J_ENGINEER] = judge.info->game_robot_HP.ally_2_robot_HP;
       judge.pkt->blood[J_INFANTRY_3] = judge.info->game_robot_HP.ally_3_robot_HP;
       judge.pkt->blood[J_INFANTRY_4] = judge.info->game_robot_HP.ally_4_robot_HP;
-      judge.pkt->blood[RESERVED] = judge.info->game_robot_HP.reserved;
       judge.pkt->blood[J_SENTRY] = judge.info->game_robot_HP.ally_7_robot_HP;
       judge.pkt->blood[J_OUTPOST] = judge.info->game_robot_HP.ally_outpost_HP;
       judge.pkt->blood[J_BASE] = judge.info->game_robot_HP.ally_base_HP;
