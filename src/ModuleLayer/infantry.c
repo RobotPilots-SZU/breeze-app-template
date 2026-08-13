@@ -418,7 +418,7 @@ static void Key_Status_Update(Infantry_t* infantry)
 		{
 			infantry->mode = I_TURN;
 		}
-		else if (rc_info->Shift.status == KEY_BOARD_RELEASE_TO_PRESS)
+		else if (rc_info->Shift.status == KEY_BOARD_PRESS_TO_RELEASE)
 		{
 			infantry->mode = I_IMU;
 			infantry->flag.chassis_reset.value = true;
