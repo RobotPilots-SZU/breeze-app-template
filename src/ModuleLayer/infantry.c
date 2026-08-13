@@ -7,7 +7,7 @@ LOG_MODULE_DECLARE(infantry_down_test, LOG_LEVEL_INF);
 #include "board_protocol.h"
 #include "gimbal.h"
 #include "launch.h" 
-//#include "vision.h"
+#include "vision.h"
 //#include "ui.h"
 //#include "cap.h"
 #include "judge.h"
@@ -87,7 +87,7 @@ static void Infantry_Work(Infantry_t* infantry)
 	chassis.work(&chassis);
 	gimbal.work(&gimbal);
 	launch.work(&launch);
-//	vision.work(&vision);
+	vision.work(&vision);
 }
 
 /**

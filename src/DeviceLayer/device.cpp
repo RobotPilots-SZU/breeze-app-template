@@ -70,6 +70,7 @@ int Device_Init(void)
         return ret;
     }
     
+    vision.init(&vision);
     chassis.init(&chassis);
     gimbal.init(&gimbal);
     launch.init(&launch);

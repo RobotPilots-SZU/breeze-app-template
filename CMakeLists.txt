@@ -38,6 +38,7 @@ target_sources(app PRIVATE
     src/ModuleLayer/chassis.c
     src/ModuleLayer/infantry.c
     src/ModuleLayer/launch.c
+    src/ModuleLayer/vision.c
     src/ProtocolLayer/board_protocol.c
     src/ProtocolLayer/judge_protocol.c
 )

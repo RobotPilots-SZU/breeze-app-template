@@ -9,6 +9,7 @@
 #include "launch.h"
 #include "iwdg.h"
 #include "judge.h"
+#include "vision.h"
 
 int Device_Init(void);
 
