@@ -79,8 +79,8 @@ static void board_rx_handler_02(const struct can_frame *frame, void *user_data)
 
 int Board_Init(Board_t* board)
 {
-	board_tx_mgr = device_get_binding("can_tx_mgr2");
-	board_rx_mgr = device_get_binding("can_rx_mgr2");
+	board_tx_mgr = DEVICE_DT_GET(DT_NODELABEL(can_tx_mgr2));
+	board_rx_mgr = DEVICE_DT_GET(DT_NODELABEL(can_rx_mgr2));
 
 	if (board_tx_mgr == NULL || board_rx_mgr == NULL) {
 		return -1;
