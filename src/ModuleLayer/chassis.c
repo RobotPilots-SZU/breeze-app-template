@@ -174,28 +174,28 @@ static void __attribute__((unused)) Chassis_Key_Input(Chassis_t *chassis)
 	key->a_d_last = key->a_d_now;
 	
 }
+static float last_front_cnt=0,last_left_cnt=0,now_front_cnt,now_left_cnt;
 
-float front_speed,left_speed,cycle_speed;
 static void Chassis_Target_Update(Chassis_t* chassis)
 {
 
 	float yaw_angle_err_rad = gimbal.info.yaw_mec_err_act;
-	
+	float front_speed,left_speed,cycle_speed;
 	static float straight_yaw = 0;
 	
 	static bool last_turn = false;
+
+	now_front_cnt = rc_sensor->info->W.cnt - rc_sensor->info->S.cnt;
+	now_left_cnt = rc_sensor->info->A.cnt - rc_sensor->info->D.cnt;
+
+	now_front_cnt = step_limit_filter(now_front_cnt*10, last_front_cnt, 100);
+	now_left_cnt = step_limit_filter(now_left_cnt*10, last_left_cnt, 100);
 	
-	static float last_front_cnt=0,last_left_cnt=0,now_front_cnt,now_left_cnt;
-	
-	now_front_cnt = step_limit_filter(rc_sensor->info->W.cnt - rc_sensor->info->S.cnt, last_front_cnt, 400);
-	now_left_cnt = step_limit_filter(rc_sensor->info->A.cnt - rc_sensor->info->D.cnt, last_left_cnt, 400);
- 
 	if(infantry.ctrl == RC_CTRL)
 	{
 		front_speed = -rc_sensor->info->ch3/660.f * FRONT_MAX_SPEED;
 		left_speed = rc_sensor->info->ch2/660.f * LEFT_MAX_SPEED;
 		cycle_speed = rc_sensor->info->ch0/660.f * CYCLE_MAX_SPEED;
-	
 	}
 	else{
 		front_speed = -1 * (float)now_front_cnt / KEY_W_CNT_MAX * FRONT_MAX_SPEED;
@@ -278,8 +278,8 @@ static void Chassis_Target_Update(Chassis_t* chassis)
 			chassis->target.cycle_speed = -1 * 300.f * yaw_angle_err_rad * yaw_angle_err_rad * sgn(yaw_angle_err_rad);
 			chassis->target.cycle_speed = constrain(chassis->target.cycle_speed, -CYCLE_MAX_SPEED, CYCLE_MAX_SPEED);
 		}
-		chassis->target.front_speed = front_speed * cosf(gimbal.info.yaw_mec_err_raw) + left_speed * sinf(gimbal.info.yaw_mec_err_raw);
-		chassis->target.left_speed = left_speed * cosf(gimbal.info.yaw_mec_err_raw) - front_speed * sinf(gimbal.info.yaw_mec_err_raw);
+		chassis->target.front_speed = front_speed * cosf(gimbal.info.yaw_mec_err_raw) - left_speed * sinf(gimbal.info.yaw_mec_err_raw);
+		chassis->target.left_speed = left_speed * cosf(gimbal.info.yaw_mec_err_raw) + front_speed * sinf(gimbal.info.yaw_mec_err_raw);
 			
      	straight_yaw = imu_get_yaw();
 		
