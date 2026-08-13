@@ -31,6 +31,7 @@ target_sources(app PRIVATE
     src/DeviceLayer/rc_sensor.c
     src/DeviceLayer/imu_wrapper.cpp
     src/DeviceLayer/iwdg.c
+    src/DeviceLayer/judge.c
     src/DeviceLayer/rtt.c
     src/ModuleLayer/Chassis_Posture.c
     src/ModuleLayer/gimbal.c
@@ -38,6 +39,7 @@ target_sources(app PRIVATE
     src/ModuleLayer/infantry.c
     src/ModuleLayer/launch.c
     src/ProtocolLayer/board_protocol.c
+    src/ProtocolLayer/judge_protocol.c
 )
 # 添加头文件路径
 target_include_directories(app PRIVATE

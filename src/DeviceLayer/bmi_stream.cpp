@@ -830,6 +830,9 @@ void Imu_Update(Imu_Sensor_t &imu)
 			imu.offset_info.gy_offset -= gyroy * 0.0005f;
 			imu.offset_info.gz_offset -= gyroz * 0.0005f;
 			cali_count++;
+			//使用固定的z轴偏移量来修正陀螺仪漂移，避免在静止状态下出现漂移
+			imu.work_state.err_code = IMU_NONE_ERR;
+			imu.offset_info.gz_offset = -0.003207537f;
 		}else
 		{
 			cali_count = 0;

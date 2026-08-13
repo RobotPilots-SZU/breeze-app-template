@@ -43,6 +43,12 @@ int Device_Init(void)
         return ret;
     }
     
+    ret = breeze::Imu_Init(breeze::imu_sensor);
+    if (ret != 0)
+    {
+        LOG_ERR("Imu_Init failed with error code: %d", ret);
+        return ret;
+    }
     ret = Motor_Init();
     if (ret != 0)
     {
@@ -50,12 +56,6 @@ int Device_Init(void)
         return ret;
     }
     
-    ret = breeze::Imu_Init(breeze::imu_sensor);
-    if (ret != 0)
-    {
-        LOG_ERR("Imu_Init failed with error code: %d", ret);
-        return ret;
-    }
     ret = board.init(&board);
     if (ret != 0)
     {
@@ -63,6 +63,13 @@ int Device_Init(void)
         return ret;
     }
 
+    ret = judge.init(&judge);
+    if (ret != 0)
+    {
+        LOG_ERR("judge_Init failed with error code: %d", ret);
+        return ret;
+    }
+    
     chassis.init(&chassis);
     gimbal.init(&gimbal);
     launch.init(&launch);
