@@ -4,6 +4,8 @@
 #include "device.hpp"				// 设备
 #include "board_protocol.h"
 #include "infantry.h"
+#include "ui.h"
+#include "priority_ui.h"
 
 LOG_MODULE_REGISTER(all_task, LOG_LEVEL_INF);
 
@@ -68,5 +70,26 @@ extern "C" void StartMonitorTask(void *arg1, void *arg2, void *arg3)
         SEGGER_RTT_Write(RTT_CH_VOFA_1, vofa_tail, sizeof(vofa_tail));
 
         k_sleep(K_MSEC(4));
+    }
+}
+
+extern "C" void StartUITask(void *arg1, void *arg2, void *arg3)
+{
+    LOG_INF("UI Task started");
+    uint8_t open_ui = 0;
+    while (true)
+    {
+        // UI任务逻辑
+        if(open_ui == 0)
+	    {
+			open_ui = 1;
+	    }
+	    else
+	    {  
+		    Ui_Info_Update();
+		
+		    Ui_Send();
+	    }
+        k_sleep(K_MSEC(1));
     }
 }

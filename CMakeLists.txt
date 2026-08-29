@@ -24,6 +24,7 @@ target_sources(app PRIVATE
     src/AlgorithmLayer/crc.c
     src/AlgorithmLayer/rp_math.c
     src/AlgorithmLayer/pid.c
+    src/AlgorithmLayer/priority_ui.c
     src/DeviceLayer/bmi_stream.cpp
     src/DeviceLayer/device.cpp
     src/DeviceLayer/device_motor.c
@@ -39,8 +40,10 @@ target_sources(app PRIVATE
     src/ModuleLayer/infantry.c
     src/ModuleLayer/launch.c
     src/ModuleLayer/vision.c
+    src/ModuleLayer/ui.c
     src/ProtocolLayer/board_protocol.c
     src/ProtocolLayer/judge_protocol.c
+    src/ProtocolLayer/ui_protocol.c
 )
 # 添加头文件路径
 target_include_directories(app PRIVATE
