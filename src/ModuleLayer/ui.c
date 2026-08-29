@@ -1100,7 +1100,7 @@ void Ui_Info_Update(void)
 // 		Enqueue_Ui_For_Sending(&dynamic_ui_info[CHARGE_CHAR]);
 // 	}
 // 	last_charge = wireless_rx_info.is_charging;
-// }
+}
 
 
 /**

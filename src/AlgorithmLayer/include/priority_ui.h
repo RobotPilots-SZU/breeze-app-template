@@ -18,6 +18,10 @@
 #include "ui_protocol.h"
 
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* Exported enum ------------------------------------------------------------*/
 
 /**
@@ -133,5 +137,10 @@ typedef struct Node_u
 ui_status_e Init_Ui_List(ui_info_t *dynamic_ui_info, uint8_t dynamic_ui_num, ui_info_t *const_ui_info, uint8_t const_ui_num);
 void Ui_Send(void);
 ui_status_e Enqueue_Ui_For_Sending(ui_info_t *ui_info);
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif
 

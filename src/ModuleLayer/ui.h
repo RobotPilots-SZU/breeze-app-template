@@ -3,6 +3,10 @@
 
 #include "stm32h7xx_hal.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef enum{
 	MODE_CHAR,
 	VISION_FRAME,//????buff
@@ -58,4 +62,9 @@ typedef enum{
 
 void My_Ui_Init(void);
 void Ui_Info_Update(void);
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif
