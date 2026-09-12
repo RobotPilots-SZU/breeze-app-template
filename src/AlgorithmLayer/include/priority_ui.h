@@ -81,7 +81,7 @@ typedef enum
  * @brief UI配置信息结构体
  * 
  */
-typedef __packed struct  {
+typedef  struct __packed {
   /*******不变配置*********/
   ui_priority_e priority;       // UI优先级(仅动态UI需要配置)
   ui_type_e ui_type;            // UI内容类型
@@ -113,7 +113,7 @@ typedef __packed struct  {
  * @brief UI信息结构体
  * 
  */
-typedef __packed struct  {
+typedef  struct __packed {
   ui_sent_state_e sent_state; // 消息发送状态标志位
   uint32_t updateTick;             // 更新消息时的时间戳
   uint32_t  priority_value;        // UI的优先级值

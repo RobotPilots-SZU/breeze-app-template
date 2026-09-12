@@ -31,8 +31,7 @@ static void Launch_Init(Launch_t* launch)
 	launch->heart_beat = Launch_Offline_Update;
 }
 
-
-static void Launch_Data_Update(Launch_t* launch)
+static void __attribute__((unused)) Launch_Data_Update(Launch_t *launch)
 {
   
 

@@ -79,17 +79,17 @@ extern "C" void StartUITask(void *arg1, void *arg2, void *arg3)
     uint8_t open_ui = 0;
     while (true)
     {
-        // UI任务逻辑
-        if(open_ui == 0)
-	    {
-			open_ui = 1;
-	    }
-	    else
-	    {  
-		    Ui_Info_Update();
+        // // UI任务逻辑
+        // if(open_ui == 0)
+	    // {
+		// 	open_ui = 1;
+	    // }
+	    // else
+	    // {  
+		//     Ui_Info_Update();
 		
-		    Ui_Send();
-	    }
+		//     Ui_Send();
+	    // }
         k_sleep(K_MSEC(1));
     }
 }

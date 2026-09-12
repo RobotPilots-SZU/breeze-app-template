@@ -29,7 +29,11 @@ client_info_t client_info =
     .client_id = 0x0101,
 };
 
-__attribute__((section(".AXI_SRAM"))) uint8_t client_tx_buf[128];
+/* UI TX buffer. No explicit section: it lands in .bss, i.e. SRAM0, which is the
+ * AXI SRAM (0x24000000) on this board. A bare ".AXI_SRAM" section does not
+ * exist in the Zephyr linker script, so the old attribute put the buffer in
+ * flash (0x080429xx), where it cannot be written. */
+uint8_t client_tx_buf[128];
 
 /**
  * @brief 更新红蓝方机器人信息，在裁判系统接受中断中调用

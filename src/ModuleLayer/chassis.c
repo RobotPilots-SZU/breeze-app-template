@@ -775,10 +775,12 @@ static void  New_Chassis_Power_Limit(Chassis_t *chassis)
 	/*计算最大输出功率*/
 	float max_power = judge.pkt->chassis_power_limit;
 
+	/* cap module is not ported yet, these are only used by the disabled code below
 	float front_speed_err = abs(chassis->target.front_speed - chassis->measure.front_speed);
 	float left_speed_err = abs(chassis->target.left_speed - chassis->measure.left_speed);
 	float cycle_speed_err = abs(chassis->target.cycle_speed - chassis->measure.cycle_speed);
 	float total_speed_err = front_speed_err + left_speed_err + cycle_speed_err;
+	*/
 
 	// 超电在线，开超电，超电能放电，超电电量充裕，操作手用超电
 	// if (cap.status->status == DEV_ONLINE && cap_tx_info.bit_control.cap_switch == 1

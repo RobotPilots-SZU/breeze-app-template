@@ -38,7 +38,7 @@
 #define ENEMY_AMMO_DISTANE   120
 
 
-void rotate_point(__packed uint16_t *x, __packed uint16_t *y, uint16_t raw_x, uint16_t raw_y, float mid_x, float mid_y, float angle);
+void rotate_point(uint16_t *x, uint16_t *y, uint16_t raw_x, uint16_t raw_y, float mid_x, float mid_y, float angle);
 void My_Chas_Circle_Update(float angle);
 static void Motor_Color_Update(uint8_t mmotor_state, uint8_t special_state, uint32_t index);
 static void Gimbal_Line_Update(float angle,uint8_t height);
@@ -914,7 +914,7 @@ void Ui_Info_Update(void)
 	static float chas_angle_err_last = 0.f,test_chas_angle = 0.f;
 	
 	test_chas_angle = gimbal.info.yaw_mec - YAW_MEC_ZERO_ANGLE;
-	if(fabs(test_chas_angle) > PI)
+	if(fabsf(test_chas_angle) > PI)
 	{
 		test_chas_angle -= sgn(test_chas_angle) * 2 * PI;
 	}
@@ -1114,7 +1114,7 @@ void Ui_Info_Update(void)
  * @param mid_y 旋转原点y
  * @param angle 旋转的角度rad
  */
-void rotate_point(__packed uint16_t *x, __packed uint16_t *y, uint16_t raw_x, uint16_t raw_y, float mid_x, float mid_y, float angle) 
+void rotate_point(uint16_t *x, uint16_t *y, uint16_t raw_x, uint16_t raw_y, float mid_x, float mid_y, float angle) 
 {
   float s = sin(angle);
   float c = cos(angle);
@@ -1132,20 +1132,31 @@ void rotate_point(__packed uint16_t *x, __packed uint16_t *y, uint16_t raw_x, ui
 /*底盘方位角更新*/
 void My_Chas_Circle_Update(float angle)
 {
-	rotate_point(&dynamic_ui_info[CHAS_HEAD_LINE].ui_config.end_x,&dynamic_ui_info[CHAS_HEAD_LINE].ui_config.end_y,
-	              CHAS_CIRCLE_X,CHAS_CIRCLE_Y + CHAS_CIRCLE_R,
-	              CHAS_CIRCLE_X,CHAS_CIRCLE_Y,
+	/* ui_config_t is packed: never take the address of its members.
+	   Rotate into local variables, then write them back. */
+	uint16_t chas_head_x = CHAS_CIRCLE_X;
+	uint16_t chas_head_y = CHAS_CIRCLE_Y + CHAS_CIRCLE_R;
+	rotate_point(&chas_head_x, &chas_head_y, chas_head_x, chas_head_y,
+	              CHAS_CIRCLE_X, CHAS_CIRCLE_Y,
 	              angle);
+	dynamic_ui_info[CHAS_HEAD_LINE].ui_config.end_x = chas_head_x;
+	dynamic_ui_info[CHAS_HEAD_LINE].ui_config.end_y = chas_head_y;
 	
-	rotate_point(&dynamic_ui_info[CHAS_SIDE_LINE].ui_config.start_x,&dynamic_ui_info[CHAS_SIDE_LINE].ui_config.start_y,
-	              CHAS_CIRCLE_X - CHAS_CIRCLE_R,CHAS_CIRCLE_Y,
-	              CHAS_CIRCLE_X,CHAS_CIRCLE_Y,
+	uint16_t chas_side_start_x = CHAS_CIRCLE_X - CHAS_CIRCLE_R;
+	uint16_t chas_side_start_y = CHAS_CIRCLE_Y;
+	rotate_point(&chas_side_start_x, &chas_side_start_y, chas_side_start_x, chas_side_start_y,
+	              CHAS_CIRCLE_X, CHAS_CIRCLE_Y,
 	              angle);
+	dynamic_ui_info[CHAS_SIDE_LINE].ui_config.start_x = chas_side_start_x;
+	dynamic_ui_info[CHAS_SIDE_LINE].ui_config.start_y = chas_side_start_y;
 	
-	rotate_point(&dynamic_ui_info[CHAS_SIDE_LINE].ui_config.end_x,&dynamic_ui_info[CHAS_SIDE_LINE].ui_config.end_y,
-	              CHAS_CIRCLE_X + CHAS_CIRCLE_R,CHAS_CIRCLE_Y,
-	              CHAS_CIRCLE_X,CHAS_CIRCLE_Y,
+	uint16_t chas_side_end_x = CHAS_CIRCLE_X + CHAS_CIRCLE_R;
+	uint16_t chas_side_end_y = CHAS_CIRCLE_Y;
+	rotate_point(&chas_side_end_x, &chas_side_end_y, chas_side_end_x, chas_side_end_y,
+	              CHAS_CIRCLE_X, CHAS_CIRCLE_Y,
 	              angle);
+	dynamic_ui_info[CHAS_SIDE_LINE].ui_config.end_x = chas_side_end_x;
+	dynamic_ui_info[CHAS_SIDE_LINE].ui_config.end_y = chas_side_end_y;
 	
 	Enqueue_Ui_For_Sending(&dynamic_ui_info[CHAS_HEAD_LINE]);
 	Enqueue_Ui_For_Sending(&dynamic_ui_info[CHAS_SIDE_LINE]);
@@ -1186,13 +1197,16 @@ static void Gimbal_Line_Update(float angle,uint8_t height)
 	{
 		dynamic_ui_info[PITCH_CIRCLE].ui_config.start_y = BODY_CENTER_Y +40 + height * 40;
 		dynamic_ui_info[PITCH_LINE].ui_config.start_y = BODY_CENTER_Y + 40 + height * 40;
-		dynamic_ui_info[PITCH_LINE].ui_config.end_y = BODY_CENTER_Y + 40 + height * 40;
 		
 		
-		rotate_point(&dynamic_ui_info[PITCH_LINE].ui_config.end_x,&dynamic_ui_info[PITCH_LINE].ui_config.end_y,
-	              BODY_CENTER_X + PITCH_LENGTH, BODY_CENTER_Y + 40 + height * 40,
-	              BODY_CENTER_X, BODY_CENTER_Y + 40 + height * 40,   
+		/* ui_config_t is packed: rotate into locals, then write them back. */
+		uint16_t pitch_end_x = BODY_CENTER_X + PITCH_LENGTH;
+		uint16_t pitch_end_y = BODY_CENTER_Y + 40 + height * 40;
+		rotate_point(&pitch_end_x, &pitch_end_y, pitch_end_x, pitch_end_y,
+	              BODY_CENTER_X, BODY_CENTER_Y + 40 + height * 40,
 	              angle);
+		dynamic_ui_info[PITCH_LINE].ui_config.end_x = pitch_end_x;
+		dynamic_ui_info[PITCH_LINE].ui_config.end_y = pitch_end_y;
 		
 		
 		Enqueue_Ui_For_Sending(&dynamic_ui_info[PITCH_CIRCLE]);
@@ -1221,10 +1235,4 @@ static void Robot_Status_Update(uint8_t robot_status,uint32_t index)
 	
 	 Enqueue_Ui_For_Sending(&dynamic_ui_info[index]);
 
-}
-
-
-static void Radar_Enemy_Status_Update(int16_t coin,int16_t* robot_ammo,uint8_t* robot_status)
-{
-	
 }

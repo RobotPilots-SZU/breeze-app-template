@@ -74,8 +74,9 @@ int Device_Init(void)
     chassis.init(&chassis);
     gimbal.init(&gimbal);
     launch.init(&launch);
+
+    My_Ui_Init();
     infantry.init(&infantry);
-    
     vofa_rtt_init();
     return 0;
 }

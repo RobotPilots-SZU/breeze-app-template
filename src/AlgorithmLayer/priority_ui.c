@@ -57,9 +57,9 @@ bool Init_Ui_Condition(void)
 
     /*
      * 上电后可靠触发一次全量 ADD。
-     * 不要使用 HAL_GetTick() == 100，因为任务不一定恰好在 100 ms 执行。
+     * 不要使用 k_uptime_get() == 100，因为任务不一定恰好在 100 ms 执行。
      */
-    if (!first_init_finished && HAL_GetTick() >= 100)
+    if (!first_init_finished && k_uptime_get() >= 100)
     {
         first_init_finished = true;
 
@@ -85,11 +85,11 @@ bool Init_Ui_Condition(void)
     {
         if (last_rc_offline_time == 0)
         {
-            last_rc_offline_time = HAL_GetTick();
+            last_rc_offline_time = k_uptime_get();
         }
-        else if ((HAL_GetTick() - last_rc_offline_time) >= 10000U)
+        else if ((k_uptime_get() - last_rc_offline_time) >= 10000U)
         {
-            last_rc_offline_time = HAL_GetTick();
+            last_rc_offline_time = k_uptime_get();
 
             rc_status_last = rc_sensor->is_online;
             return true;
@@ -161,7 +161,7 @@ bool Init_Ui_Condition(void)
 uint32_t Calculate_Priority(ui_info_t *msg) 
 {
   uint32_t priority_value = 0;
-  uint32_t currentTick = HAL_GetTick();
+  uint32_t currentTick = k_uptime_get();
   uint32_t age = currentTick - msg->updateTick;//消息的年龄
 
   // 根据消息的优先级计算优先级值
@@ -386,8 +386,15 @@ ui_status_e Init_Type_LinkedLists(Node_u** graphic_link, Node_u** char_link, ui_
     newNode->next = NULL;
     //给当前UI命名
     #ifdef AUTO_UI_NAME_ENABLE
+      /* name[] is 3 bytes (protocol limit): at most 2 digits + '\0'.
+         Clamping keeps snprintf from ever truncating the output. */
       char *name = dynamic_ptr->ui_config.name;
-      sprintf(name, "%d", i);
+      unsigned int ui_index = (unsigned int)i;
+      if (ui_index > 99U)
+      {
+        ui_index = 99U;
+      }
+      snprintf(name, sizeof(dynamic_ptr->ui_config.name), "%u", ui_index);
     #endif
     //判断当前UI是否为CHAR类型
     if (dynamic_ptr->ui_config.ui_type != CHAR && dynamic_ptr->ui_config.operate_type != DELETE ) 
@@ -436,8 +443,15 @@ ui_status_e Init_Type_LinkedLists(Node_u** graphic_link, Node_u** char_link, ui_
     newNode->next = NULL;
     //给当前UI命名
     #ifdef AUTO_UI_NAME_ENABLE
+      /* name[] is 3 bytes (protocol limit): at most 2 digits + '\0'.
+         Clamping keeps snprintf from ever truncating the output. */
       char *name = const_ptr->ui_config.name;
-      sprintf(name, "%d", i + dynamic_num + 1);
+      unsigned int ui_index = (unsigned int)i + (unsigned int)dynamic_num + 1U;
+      if (ui_index > 99U)
+      {
+        ui_index = 99U;
+      }
+      snprintf(name, sizeof(const_ptr->ui_config.name), "%u", ui_index);
     #endif
     //判断当前UI是否为CHAR类型
     if (const_ptr->ui_config.ui_type != CHAR && const_ptr->ui_config.operate_type != DELETE) 
@@ -1183,7 +1197,7 @@ ui_status_e Ui_Send_Add(void)
 void Ui_Send()
 {
   /*判断是否到了发送时间****************************/
-  uint32_t currentTick = HAL_GetTick();
+  uint32_t currentTick = k_uptime_get();
   static uint32_t lastTick = 0;
   if (currentTick - lastTick < SEND_INTERVAL)
   {
@@ -1216,7 +1230,7 @@ void Ui_Send()
 	{		
     Ui_Send_Normal();
 	}
-	lastTick = HAL_GetTick();
+	lastTick = k_uptime_get();
 }
 
 /**
@@ -1233,7 +1247,7 @@ ui_status_e Enqueue_Ui_For_Sending(ui_info_t *ui_info)
 
   if (ui_info->sent_state == MESSAGE_SENT)//发过先更新时间，未先之前一直某发又更新就会一直发唔出去
   {
-    ui_info->updateTick = HAL_GetTick();
+    ui_info->updateTick = k_uptime_get();
   }
   
   ui_info->sent_state = MESSAGE_NOT_SENT;
