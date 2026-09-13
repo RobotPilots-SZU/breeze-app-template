@@ -9,7 +9,8 @@
 #include "launch.h"
 #include "iwdg.h"
 #include "judge.h"
-
+#include "vision.h"
+#include "ui.h"
 int Device_Init(void);
 
 extern const struct device *iwdg_dev;  /* 外部只读，初始化后在 device.cpp 中赋值 */

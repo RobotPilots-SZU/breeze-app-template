@@ -11,12 +11,14 @@ namespace infantry_down_test
     struct k_thread update_thread_ctrl;
     struct k_thread heartbeat_thread_ctrl;
     struct k_thread monitor_thread_ctrl;
+    struct k_thread ui_thread_ctrl;
 
     /* ---------- 定义栈空间（实例化） ---------- */
     K_KERNEL_STACK_DEFINE(system_update_stack, STACK_SIZE_SYSTEM);
     K_THREAD_STACK_DEFINE(update_stack, STACK_SIZE_UPDATE);
     K_KERNEL_STACK_DEFINE(heartbeat_stack, STACK_SIZE_HEARTBEAT);
     K_KERNEL_STACK_DEFINE(monitor_stack, STACK_SIZE_MONITOR);
+    K_THREAD_STACK_DEFINE(ui_stack, STACK_SIZE_UI);
 
     /* ---------- 初始化所有任务 ---------- */
     void InitProcess(void)
@@ -66,6 +68,18 @@ namespace infantry_down_test
                         0,
                         K_NO_WAIT);
         LOG_INF("Monitor Task created (priority %d)", proc_MonitorTaskPriority);
+
+        /* 5. 创建 UI Task */
+        k_thread_create(&ui_thread_ctrl,
+                        ui_stack,
+                        K_THREAD_STACK_SIZEOF(ui_stack),
+                        StartUITask,
+                        nullptr, nullptr, nullptr,
+                        proc_UITaskPriority,
+                        0,
+                        K_NO_WAIT);
+        LOG_INF("UI Task created (priority %d)", proc_UITaskPriority);
+
 
         LOG_INF("All tasks created successfully!");
     }

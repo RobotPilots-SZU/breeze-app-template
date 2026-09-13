@@ -193,6 +193,10 @@ void Judge_Data_Update(uint16_t id, uint8_t *rxBuf)
 
     case ID_robot_interaction_data:
       memcpy(&judge.info->robot_interaction_data, rxBuf, LEN_robot_interaction_data);
+      if (judge.info->robot_interaction_data.data_cmd_id == 0x211)
+      {
+          memcpy(&judge.info->radar_information_status, &judge.info->robot_interaction_data.user_data, sizeof(radar_information_status_t));
+      }
 		  judge.status->offline_cnt = 0;
       judge.status->status = DEV_ONLINE;    
       break;

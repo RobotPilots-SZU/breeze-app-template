@@ -30,6 +30,10 @@
 #define ID_custom_info               0x0308U
 #define ID_set_video_channel         0x0F01U
 #define ID_query_video_channel       0x0F02U
+#define ID_radar_enemy_HP            0x0A02U
+#define ID_radar_enemy_ammo          0x0A03U
+#define ID_radar_enemy_team_status   0x0A04U
+#define ID_radar_enemy_robot_status  0x0A05U
 
 /* ========================== 结构体长度 ========================== */
 /* 注意：长度 = 数据段长度，不含帧头(5)+cmd_id(2)+CRC16(2) */
@@ -54,6 +58,10 @@
 #define LEN_custom_info              34U
 #define LEN_set_video_channel        1U
 #define LEN_query_video_channel      1U
+#define LEN_radar_enemy_HP           12U
+#define LEN_radar_enemy_ammo         10U
+#define LEN_radar_enemy_team_status  8U
+#define LEN_radar_enemy_robot_status 41U
 
 /*---------------------结构体-----------------------*/
 /* -------------------- 0x0001 -------------------- */
@@ -371,6 +379,134 @@ typedef struct __attribute__((packed))
 } query_video_channel_t;
 
 
+/*
+ * @brief  对方机器人血量信息，由信号发射源发送给雷达
+ * @note   以 10 Hz 频率持续发送，数据长度为 12 字节
+ *
+ * @details
+ * 当对应机器人未上场或被罚下时，血量值为 0。
+ * 本命令不包含空中机器人、前哨站和基地血量。
+ */
+typedef struct __attribute__((packed))
+{
+    uint16_t enemy_hero_HP;       /* 偏移 0：对方 1 号英雄机器人血量 */
+    uint16_t enemy_engineer_HP;   /* 偏移 2：对方 2 号工程机器人血量 */
+    uint16_t enemy_infantry_3_HP; /* 偏移 4：对方 3 号步兵机器人血量 */
+    uint16_t enemy_infantry_4_HP; /* 偏移 6：对方 4 号步兵机器人血量 */
+    uint16_t enemy_sentry_HP;     /* 偏移 8：对方 7 号哨兵机器人血量 */
+    uint32_t update_timestamp;
+
+} radar_enemy_HP_t;
+
+
+/*
+ * @brief  对方机器人剩余允许发弹量信息，由信号发射源发送给雷达
+ * @note   以 10 Hz 频率持续发送，数据长度为 10 字节
+ *
+ * @details
+ * 步兵、空中和哨兵机器人的数值包含堡垒增益点提供的
+ * 储备允许发弹量。
+ *
+ * 工程机器人没有发弹量字段。
+ */
+typedef struct __attribute__((packed))
+{
+    uint16_t enemy_hero_ammo;       /* 偏移 0：对方 1 号英雄机器人允许发弹量 */
+    uint16_t enemy_infantry_3_ammo; /* 偏移 2：对方 3 号步兵机器人允许发弹量 */
+    uint16_t enemy_infantry_4_ammo; /* 偏移 4：对方 4 号步兵机器人允许发弹量 */
+    uint16_t enemy_aerial_ammo;     /* 偏移 6：对方 6 号空中机器人允许发弹量 */
+    uint16_t enemy_sentry_ammo;     /* 偏移 8：对方 7 号哨兵机器人允许发弹量 */
+    uint32_t update_timestamp;
+
+} radar_enemy_ammo_t;
+
+
+/*
+ * @brief  对方队伍宏观状态信息，由信号发射源发送给雷达
+ * @note   以 10 Hz 频率持续发送，数据长度为 8 字节
+ *
+ * @details
+ * 包含对方剩余金币、累计总金币及场地交互模块状态。
+ */
+typedef struct __attribute__((packed))
+{
+    uint16_t remaining_gold_coin; /* 对方剩余金币 */
+    uint16_t total_gold_coin;     /* 对方累计总金币 */
+    uint32_t field_status;        /* 对方队伍宏观/场地状态 */
+    uint32_t update_timestamp;
+} radar_enemy_team_status_t;
+
+
+/*
+ * 单个机器人增益信息。
+ *
+ * 对应 0x0A05 中每个机器人的连续 7 字节数据。
+ */
+typedef struct __attribute__((packed))
+{
+    uint8_t  recovery_buff;       /* 回血增益，百分比 */
+    uint16_t cooling_buff;        /* 射击热量冷却增益 */
+    uint8_t  defence_buff;        /* 防御增益，百分比 */
+    uint8_t  vulnerability_buff;  /* 负防御/易伤增益，百分比 */
+    uint16_t attack_buff;         /* 攻击增益，百分比 */
+} radar_enemy_robot_buff_t;
+
+
+/*
+ * @brief  对方各机器人当前增益效果和主要状态
+ * @note   以 10 Hz 频率持续发送，数据长度为 41 字节
+ *
+ * @details
+ * 包含对方英雄、工程、3 号步兵、4 号步兵和哨兵的增益数据；
+ * 另外包含对方哨兵姿态及五台机器人的主要状态。
+ *
+ * 本命令不包含空中机器人状态。
+ */
+typedef struct __attribute__((packed))
+{
+    radar_enemy_robot_buff_t hero;       /* 偏移 0：对方英雄增益，7 字节 */
+    radar_enemy_robot_buff_t engineer;   /* 偏移 7：对方工程增益，7 字节 */
+    radar_enemy_robot_buff_t infantry_3; /* 偏移 14：对方 3 号步兵增益，7 字节 */
+    radar_enemy_robot_buff_t infantry_4; /* 偏移 21：对方 4 号步兵增益，7 字节 */
+    radar_enemy_robot_buff_t sentry;     /* 偏移 28：对方哨兵增益，7 字节 */
+
+    uint8_t sentry_mode;                 /* 偏移 35：对方哨兵当前姿态
+                                          * 0：未定义/无效
+                                          * 1：进攻姿态
+                                          * 2：防御姿态
+                                          * 3：移动姿态
+                                          * 4：强化进攻姿态
+                                          * 5：强化防御姿态
+                                          * 6：强化移动姿态 */
+
+    uint8_t hero_status;                 /* 偏移 36：对方英雄主要状态 */
+    uint8_t engineer_status;             /* 偏移 37：对方工程主要状态 */
+    uint8_t infantry_3_status;           /* 偏移 38：对方 3 号步兵主要状态 */
+    uint8_t infantry_4_status;           /* 偏移 39：对方 4 号步兵主要状态 */
+    uint8_t sentry_status;               /* 偏移 40：对方哨兵主要状态
+                                          *
+                                          * 主要状态枚举：
+                                          * 0：存活
+                                          * 1：战亡
+                                          * 2：无敌但不虚弱
+                                          * 3：无敌且虚弱
+                                          *
+                                          * 机器人异常离线不会影响该状态判断。 */
+    uint32_t update_timestamp;
+
+} radar_enemy_robot_status_t;
+
+typedef struct __attribute__((packed))
+{
+    radar_enemy_HP_t            radar_enemy_HP;
+    radar_enemy_ammo_t          radar_enemy_ammo;
+    radar_enemy_team_status_t   radar_enemy_team_status;
+    radar_enemy_robot_status_t  radar_enemy_robot_status;
+    uint32_t current_timestamp;
+
+} radar_information_status_t;
+
+
 typedef struct{
 	game_status_t              game_status;           
 	game_result_t              game_result;          
@@ -393,6 +529,8 @@ typedef struct{
 	custom_info_t              custom_info;      
 	set_video_channel_t        set_video_channel;   
 	query_video_channel_t      query_video_channel;
+	
+	radar_information_status_t radar_information_status;
 	
 }Judge_Info_t;
 
@@ -425,6 +563,11 @@ typedef struct{
 	uint8_t launching_frequency;            /* 弹丸射速，单位：Hz */
   float   initial_speed;                  /* 弹丸初速度，单位：m/s */
 	uint16_t projectile_allowance_17mm;     /* 17 mm 弹丸允许发弹量 */
+
+  uint16_t enemy_blood[J_ROBOT_CNT];      /* 对方血量 */
+  uint16_t enemy_ammo[J_ROBOT_CNT];       /* 对方允许发弹量 */
+  uint16_t enemy_remaining_gold;
+  uint8_t  enemy_robot_status[J_ROBOT_CNT];
 
 }Judge_Pkt_t;
 
