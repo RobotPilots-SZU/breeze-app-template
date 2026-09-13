@@ -11,6 +11,7 @@
 #include "stdio.h"
 #include "judge_protocol.h"
 #include "judge.h"
+#include "uart_bus.h"
 #include <zephyr/device.h>
 #include <zephyr/devicetree.h>
 #include <zephyr/logging/log.h>
@@ -19,9 +20,8 @@
 
 LOG_MODULE_REGISTER(ui_protocol, LOG_LEVEL_INF);
 
-/* 通过设备树节点获取 USART1（define在judge_protocol.c中） */
-#define USART1_NODE DT_NODELABEL(usart1)
-static const struct device *const usart1 = DEVICE_DT_GET(USART1_NODE);
+/* usart1 is owned by uart_bus.c now (single async callback + DMA buffers);
+ * this file only talks to it through Uart_Bus_Send(). */
 
 client_info_t client_info =
 {
@@ -453,22 +453,9 @@ uint8_t client_graphic_delete_update(uint8_t delete_layer)
   */
 uint8_t uart_send_data(uint8_t *txbuf, uint16_t length)
 {
-    int ret = uart_tx(usart1, txbuf, length, 0);    //暂时不设置超时时间
-    if (ret == 0)
-    {
-        LOG_DBG("TX started %p", txbuf);
-        return 0;      // 0：发送成功启动
-    }
-    else if (ret == -EBUSY)
-    {
-        LOG_DBG("UART busy, queuing %p", txbuf);
-        return 2;    // 2：忙，下周期重试
-    }
-    else
-    {
-        LOG_ERR("UART TX failed with error: %d", ret);
-        return 1;   // 1：错误
-    }
+    /* uart_bus copies the frame into its own TX buffer before starting DMA,
+     * so client_tx_buf can be rewritten right away. Returns 2 (HAL_BUSY) if
+     * the previous frame is still being transmitted. */
+    return Uart_Bus_Send(txbuf, length);
 }
-
 /******************************串口发送数据end**************************************/

@@ -44,7 +44,9 @@ target_sources(app PRIVATE
     src/ProtocolLayer/board_protocol.c
     src/ProtocolLayer/judge_protocol.c
     src/ProtocolLayer/ui_protocol.c
+    src/ProtocolLayer/uart_bus.c
 )
+
 # 添加头文件路径
 target_include_directories(app PRIVATE
     src/AlgorithmLayer/include      # 算法层头文件

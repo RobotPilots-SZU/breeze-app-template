@@ -9,6 +9,7 @@ LOG_MODULE_REGISTER(judge, LOG_LEVEL_INF);
 #include "string.h"
 #include "crc.h"
 #include "judge.h"
+#include "uart_bus.h"
 
 /* 通过设备树节点获取 USART1 */
 #define USART1_NODE DT_NODELABEL(usart1) 
@@ -23,13 +24,23 @@ drv_judge_info_t drv_judge_info = {
 #define RX_BUF_SIZE 256
 static uint8_t rx_buf[RX_BUF_SIZE];
 static uint16_t rx_len = 0;
-void USART1_rxDataHandler(const struct device *dev, void *user_data)
-{	
-	uart_irq_update(dev);
-	uint8_t byte;
 
-	while (uart_irq_rx_ready(dev) && uart_fifo_read(dev, &byte, 1) > 0)
+/* RX is owned by uart_bus.c (DMA double buffer + the single event callback);
+ * this file only turns the received data blocks into judge frames. */
+static void Judge_Rx_Parse(const uint8_t *data, uint32_t len);
+
+/**
+ * @brief Feed one received DMA block into the judge frame parser.
+ *        Runs in UART callback (ISR) context, like the old IRQ handler did.
+ */
+static void Judge_Rx_Parse(const uint8_t *data, uint32_t len)
+{
+	uint32_t rx_idx;
+
+	for (rx_idx = 0; rx_idx < len; rx_idx++)
 	{
+		uint8_t byte = data[rx_idx];
+
 		//将数据填入
 		if (rx_len < RX_BUF_SIZE)
 		{
@@ -105,17 +116,19 @@ int Judge_Init(Judge_t *judge)
 		LOG_ERR("UART1 device not ready");
 		return -1;
 	}
-	/* 注册中断回调 */
-	int ret = uart_irq_callback_user_data_set(usart1, USART1_rxDataHandler, NULL);
-	if ( ret != 0)
+	/* 注册异步回调  */
+	/* usart1 (its single async callback and the DMA rx/tx buffers) is owned
+	 * by uart_bus: do not call uart_callback_set()/uart_rx_enable() here. */
+	Uart_Bus_Set_Rx_Callback(Judge_Rx_Parse);
+
+	int ret = Uart_Bus_Init();
+	if (ret != 0)
 	{
 		return ret;
 	}
 	
 
-	/* 使能接收中断 */
-	uart_irq_rx_enable(usart1);
-
+	/* 启动 DMA 接收 */
 	return 0;
 }
 
